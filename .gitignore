@@ -57,3 +57,4 @@ target/
 venv
 
 ignore
+sim_history.json
