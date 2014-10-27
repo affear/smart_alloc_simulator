@@ -1,0 +1,1 @@
+export PYTHONPATH="~/Projects/thesis/smart_alloc_simulator:$PYTHONPATH"
