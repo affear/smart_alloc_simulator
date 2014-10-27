@@ -11,3 +11,14 @@ class _Command(object):
 
 class CreateCommand(_Command):
 	name = 'boot'
+
+#exporting the list of commands
+import sys
+import inspect
+
+def _filter_command_fn(obj):
+	return inspect.isclass(obj) and not obj.__name__.startswith('_') and obj.__name__.endswith('Command')
+
+CMDS = {}
+for name, cs in inspect.getmembers(sys.modules[__name__], _filter_command_fn):
+	CMDS[name.lower()[:(len(name)-len('Command'))]] = cs()
