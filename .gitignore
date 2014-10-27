@@ -61,3 +61,4 @@ venv
 
 ignore
 sim_history.json
+projectrc
