@@ -1,7 +1,7 @@
 # The real simulation
-from concrete import machines, users
-from nova import compute, scheduler
-from smart import consolidator
+#import sim.concrete
+from sim.nova import compute, scheduler
+from sim.smart import consolidator
 
 def do_sim():
 	pass

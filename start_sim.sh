@@ -1,2 +1,2 @@
 #!/bin/sh
-python sim/sim.py
+python sim/utils/run_sim.py
