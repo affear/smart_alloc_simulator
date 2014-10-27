@@ -13,6 +13,11 @@ class Host(Base):
 	compute_nodes table in nova db; it includes only fields useful for the simulation.
 	"""
 
+	def __repr__(self):
+
+		return "{\nhostname : %s\n vcpus : %d/%d\n memory_mb : %d/%d\n local_gb : %d/%d\n running_vms : %d\n}" % (self.hostname, self.vcpus_used, self.vcpus,self.memory_mb_used,self.memory_mb,self.local_gb_used,self.local_gb,self.running_vms)
+
+
 	__tablename__ = "compute_node"
 
 	id = Column(Integer, primary_key=True, autoincrement=False)
