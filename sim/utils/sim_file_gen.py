@@ -66,7 +66,11 @@ class ResizeCommand(_VirtualCommand):
 
 import sys
 import inspect
-
+#exporting the list of commands as
+# {
+#		cmd_name: Class,
+#		...
+# }
 def _filter_command_fn(obj):
 		return inspect.isclass(obj) and \
 			not obj.__name__.startswith('_') \
