@@ -58,13 +58,17 @@ class MissingIdError(Exception):
 	def __str__(self):
 		return repr("Entity with id %d doesn't exist" % self.missingId)
 
+def _open_session():
+	"""Opens and returns the DB session"""
+	DBSession = sessionmaker(bind=engine)
+	session = DBSession()
+	return session
+
 #CRUD Operations
 
 def create(id, vcpus, memory_mb, local_gb, hostname):
 
-	#Opens the DB session
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
+	session = _open_session()
 
 	#Checks if the id already exists
 	if session.query(Host).filter(Host.id == id).count() > 0:
@@ -78,9 +82,7 @@ def create(id, vcpus, memory_mb, local_gb, hostname):
 
 def get(id):
 	
-	#Opens the DB session
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
+	session = _open_session()
 
 	#Checks if the id already exists
 	host = session.query(Host).filter(Host.id == id).one()
@@ -91,9 +93,7 @@ def get(id):
 	
 def get_all():
 
-	#Opens the DB session
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
+	session = _open_session()
 
 	#Checks if the id already exists
 	hosts = session.query(Host).all()
@@ -101,9 +101,7 @@ def get_all():
 
 def update(id, **kwargs):
 		
-	#Opens the DB session
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
+	session = _open_session()
 
 	#Checks if the id already exists
 	host = session.query(Host).filter(Host.id == id).all()
@@ -117,10 +115,7 @@ def update(id, **kwargs):
 
 def delete(id):
 	
-	#Opens the DB session
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
-
+	session = _open_session()
 
 	if session.query(Host).filter(Host.id == id).delete() == 0:
 		raise MissingIdError(id)
