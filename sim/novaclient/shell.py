@@ -8,5 +8,3 @@ def _filter_command_fn(obj):
 CMDS = {}
 for name, cs in inspect.getmembers(commands, _filter_command_fn):
 	CMDS[name.lower()[:(len(name)-len('Command'))]] = cs()
-
-
