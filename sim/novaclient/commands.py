@@ -12,6 +12,15 @@ class _Command(object):
 class CreateCommand(_Command):
 	name = 'boot'
 
+class TerminateCommand(_Command):
+	name = 'down'
+
+class ResizeCommand(_Command):
+	name = 'resize'
+
+class LiveMigrateCommand(_Command):
+	name = 'migrate'
+
 #exporting the list of commands
 import sys
 import inspect
