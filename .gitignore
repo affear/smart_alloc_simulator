@@ -56,5 +56,8 @@ target/
 # Virtual Environment
 venv
 
+# Sqlite3 DB
+*.db
+
 ignore
 sim_history.json
