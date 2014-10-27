@@ -13,8 +13,6 @@ class _Command(object):
 		abstract = True
 
 #concrete implementations
-import random
-import sim.nova
 class CreateCommand(_Command):
 	name = 'boot'
 
