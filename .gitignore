@@ -55,3 +55,5 @@ target/
 
 # Virtual Environment
 venv
+
+ignore
