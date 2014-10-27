@@ -56,4 +56,7 @@ target/
 # Virtual Environment
 venv
 
+# Sqlite3 DB
+*.db
+
 ignore
