@@ -147,4 +147,4 @@ if __name__ == '__main__':
 	with open(HISTORY_FILE, 'w') as out:
 		json.dump(cmds_history, out)
 
-	print 'File sim_history.json succesfully generated!'
+	print 'File ' + HISTORY_FILE + ' succesfully generated!'
