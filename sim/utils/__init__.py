@@ -1,0 +1,1 @@
+HISTORY_FILE = 'sim_history.json'
