@@ -1,5 +1,4 @@
 from sim.nova.compute import rpcapi
-import logging
 
 class _Command(object):
 	'''
@@ -7,16 +6,11 @@ class _Command(object):
 	'''
 	name = 'abstract command'
 
+	def __init__(self):
+		self.compute_rpcapi = rpcapi.ComputeTaskAPI()
+
 	def execute(self):
 		raise NotImplementedError
-
-	def _log_info(self, *args):
-		args = list(args)
-		args.insert(0, ':')
-		args.insert(0, self.name)
-		args.insert(0, 'executing')
-		args = map(lambda a: str(a), args)
-		logging.info(' '.join(args))
 
 	class Meta:
 		abstract = True
@@ -31,7 +25,7 @@ class CreateCommand(_Command):
 		self.id = id
 
 	def execute(self):
-		self._log_info(self.flavor['name'], self.id)
+		self.compute_rpcapi.build_instance(flavor=self.flavor, id=self.id)
 
 class TerminateCommand(_Command):
 	name = 'down'
@@ -41,7 +35,7 @@ class TerminateCommand(_Command):
 		self.id = id
 
 	def execute(self):
-		self._log_info(self.id)
+		self.compute_rpcapi.delete(id=self.id)
 
 class ResizeCommand(_Command):
 	name = 'resize'
@@ -52,4 +46,4 @@ class ResizeCommand(_Command):
 		self.id = id
 
 	def execute(self):
-		self._log_info(self.flavor['name'], self.id)
+		self.compute_rpcapi.resize(id=self.id, flavor=self.flavor)
