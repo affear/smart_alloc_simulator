@@ -1,6 +1,7 @@
 """
-	Run this script to generate a random the simulation file
+	Run this script to generate a random simulation file
 """
+from sim.novaclient import commands
 
 # Virtual classes for commands
 class _VirtualCommand(object):
@@ -10,7 +11,7 @@ class _VirtualCommand(object):
 	name = 'abstract command'
 
 	def _gen_command(self, *args):
-		cmd = ' '.join(['nova', self.name])
+		cmd = self.name
 		for arg in args:
 			cmd = ' '.join([cmd, str(arg)])
 		return cmd
@@ -25,7 +26,13 @@ class _VirtualCommand(object):
 				nova boot tiny
 				nova terminate 42
 		'''
-		return self.name
+		raise NotImplementedError
+
+	def get_concrete_command(self, str_args):
+		'''
+			returns the concrete command associated with the virtual one
+		'''
+		raise NotImplementedError
 
 	class Meta:
 		abstract = True
@@ -47,6 +54,17 @@ class CreateCommand(_VirtualCommand):
 
 		return self._gen_command(flavor['name'], status['id'] - 1) 
 
+	def get_concrete_command(self, str_args):
+		'''
+			cmd structure:
+			boot {flavor} {id}
+		'''
+		args = str_args.split(' ')
+		return commands.CreateCommand(
+			id=int(args[2]),
+			flavor=getattr(sim.nova.FLAVORS, args[1].upper())
+		)
+
 class TerminateCommand(_VirtualCommand):
 	name = 'down'
 
@@ -54,6 +72,14 @@ class TerminateCommand(_VirtualCommand):
 		vm_index = random.randint(0, len(status['vms']) - 1)
 		del_vm = status['vms'].pop(vm_index)
 		return self._gen_command(del_vm['id'])
+
+	def get_concrete_command(self, str_args):
+		'''
+			cmd structure:
+			down {id}
+		'''
+		args = str_args.split(' ')
+		return commands.TerminateCommand(id=int(args[1]))
 
 class ResizeCommand(_VirtualCommand):
 	name = 'resize'
@@ -63,6 +89,17 @@ class ResizeCommand(_VirtualCommand):
 		vm_index = random.randint(0, len(status['vms']) - 1)
 		status['vms'][vm_index]['flavor'] = new_flavor
 		return self._gen_command(status['vms'][vm_index]['id'], new_flavor['name'])
+
+	def get_concrete_command(self, str_args):
+		'''
+			cmd structure:
+			resize {id} {flavor}
+		'''
+		args = str_args.split(' ')
+		return commands.ResizeCommand(
+			id=int(args[1]),
+			flavor=getattr(sim.nova.FLAVORS, args[2].upper())
+		)
 
 import sys
 import inspect
@@ -78,7 +115,7 @@ def _filter_command_fn(obj):
 
 CMDS = {}
 for name, cs in inspect.getmembers(sys.modules[__name__], _filter_command_fn):
-	CMDS[name.lower()[:(len(name)-len('Command'))]] = cs
+	CMDS[cs().name] = cs
 
 #file generation
 if __name__ == '__main__':
@@ -99,17 +136,15 @@ if __name__ == '__main__':
 	}
 
 	for t in xrange(NUM_T):
-		t_dict = {}
 		if len(status['vms']) > 0:
 			cmd = random.choice(CMDS.values())().execute_virtual(status)
 		else: #there are no virtual machines... let's spawn one!
-			cmd = [CMDS['create']().execute_virtual(status), ]
-		k = 't%d' % t
-		t_dict[k] = cmd
-		cmds_history['history'].append(t_dict)
+			cmd = CMDS['boot']().execute_virtual(status)
+		cmds_history['history'].append(cmd)
 
 	import json
-	with open('sim_history.json', 'w') as out:
+	from sim.utils import HISTORY_FILE
+	with open(HISTORY_FILE, 'w') as out:
 		json.dump(cmds_history, out)
 
 	print 'File sim_history.json succesfully generated!'
