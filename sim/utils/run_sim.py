@@ -1,10 +1,8 @@
 # The real simulation
 if __name__ == '__main__':
-	from sim.utils import HISTORY_FILE, LOG_FILE
+	from sim.utils import HISTORY_FILE, LOG_FILE, logger
 	from sim.utils.sim_file_gen import CMDS 
 	import json
-	import logging
-	logger = logging.getLogger('sim')
 
 	cmds_list = []
 	with open(HISTORY_FILE, 'r') as f:

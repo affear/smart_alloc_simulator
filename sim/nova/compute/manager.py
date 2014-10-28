@@ -1,7 +1,6 @@
 from oslo import messaging
 from oslo.config import cfg
-import logging
-logger = logging.getLogger('compute')
+from sim.nova.compute import logger
 
 class ComputeTaskManager(object):
 
@@ -10,7 +9,6 @@ class ComputeTaskManager(object):
 		args.insert(0, ':')
 		args.insert(0, task_name)
 		args.insert(0, 'executing')
-		args.insert(0, __name__)
 		args = map(lambda a: str(a), args)
 		logger.info(' '.join(args))
 
