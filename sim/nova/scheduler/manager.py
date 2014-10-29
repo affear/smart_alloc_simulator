@@ -22,8 +22,11 @@ if __name__ == '__main__':
 
 	log_utils.setup_logger('scheduler', log_utils.SCHEDULER_LOG_FILE)
 
+	CONF = cfg.CONF
+	CONF.import_opt('scheduler_topic', 'sim.nova.scheduler.rpcapi')
+	CONF.import_opt('host', 'sim.nova.compute')
 	transport = messaging.get_transport(cfg.CONF)
-	target = messaging.Target(topic='scheduler', server='compute1')
+	target = messaging.Target(topic=CONF.scheduler_topic, server=CONF.compute)
 	endpoints = [ComputeTaskManager(), ]
 	server = messaging.get_rpc_server(transport, target, endpoints,
 																			executor='blocking')
