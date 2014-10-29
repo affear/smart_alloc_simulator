@@ -2,7 +2,7 @@ from oslo import messaging
 from oslo.config import cfg
 import logging
 
-class ComputeTaskManager(object):
+class ComputeManager(object):
 	logger = logging.getLogger('compute')
 
 	def _log_info(self, task_name, *args):
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
 	transport = messaging.get_transport(cfg.CONF)
 	target = messaging.Target(topic='compute', server='compute1')
-	endpoints = [ComputeTaskManager(), ]
+	endpoints = [ComputeManager(), ]
 	server = messaging.get_rpc_server(transport, target, endpoints,
 																			executor='blocking')
 	server.start()
