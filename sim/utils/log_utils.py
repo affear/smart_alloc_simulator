@@ -1,7 +1,8 @@
 import logging
 
-COMPUTE_LOG_FILE = 'compute.log'
-SCHEDULER_LOG_FILE = 'scheduler.log'
+SIM_LOG_FILE = 'logs/sim.log'
+COMPUTE_LOG_FILE = 'logs/compute.log'
+SCHEDULER_LOG_FILE = 'logs/scheduler.log'
 
 def setup_logger(name, file_name):
 	logger = logging.getLogger(name)
