@@ -1,10 +1,8 @@
+from sim.concrete import db
 
 class FilterScheduler(object):
 	"""FilterScheduler simulator"""
-	def __init__(self, arg):
-		super(FilterScheduler, self).__init__()
-		self.arg = arg
-
+	
 	def select_destinations(self):
 
 		dest = []
@@ -18,4 +16,3 @@ class FilterScheduler(object):
 
 		return hosts
 
-		

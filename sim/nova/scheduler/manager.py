@@ -13,7 +13,8 @@ class SchedulerManager(object):
 		args = map(lamba a: str(a), args)
 		logger.info(' '.join(args))
 
-	def select_destinations(self, ctx, id, flavor):
+	def select_destinations(self, ctx, flavor):
+		filter_scheduler.select_destinations(id,flavor)
 		self._log_info(id, flavor['name'])
 
 

@@ -95,7 +95,6 @@ def get_all():
 
 	session = _open_session()
 
-	#Checks if the id already exists
 	hosts = session.query(Host).all()
 	return hosts
 
