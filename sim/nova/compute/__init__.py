@@ -1,15 +1,21 @@
 # configure logging
 import logging
 
-LOG_FILE='compute.log'
+COMPUTE_LOG_FILE = 'compute.log'
+SCHEDULER_LOG_FILE = 'scheduler.log'
 
-logger = logging.getLogger('compute')
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fileHandler = logging.FileHandler(LOG_FILE, mode='w')
-fileHandler.setFormatter(formatter)
-streamHandler = logging.StreamHandler()
-streamHandler.setFormatter(formatter)
+def setup_logger(name, file_name):
+	logger = logging.getLogger(name)
+	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	fileHandler = logging.FileHandler(file_name, mode='w')
+	fileHandler.setFormatter(formatter)
+	streamHandler = logging.StreamHandler()
+	streamHandler.setFormatter(formatter)
 
-logger.setLevel(logging.INFO)
-logger.addHandler(fileHandler)
-logger.addHandler(streamHandler)
+	logger.setLevel(logging.INFO)
+	logger.addHandler(fileHandler)
+	logger.addHandler(streamHandler)
+
+
+setup_logger('compute', COMPUTE_LOG_FILE)
+setup_logger('scheduler', SCHEDULER_LOG_FILE)
