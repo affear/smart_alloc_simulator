@@ -14,7 +14,7 @@ if __name__ == '__main__':
 			keyword = cmd_string.split(' ')[0]
 			return CMDS[keyword]().get_concrete_command(cmd_string)
 
-		cmds_list = map(mapping_fn, data['history'])
+		cmds_list = map(mapping_fn, data)
 
 	def do_sim():
 		for cmd in cmds_list:

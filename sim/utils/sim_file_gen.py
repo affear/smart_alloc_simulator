@@ -1,7 +1,25 @@
-"""
-	Run this script to generate a random simulation file
-"""
+HISTORY_FILE = 'sim_history.json'
 from sim.novaclient import commands
+# export simulation configurations
+from oslo.config import cfg
+
+sim_group = cfg.OptGroup(name='general')
+sim_opts = [
+	cfg.IntOpt(
+		'no_pms',
+		default=5,
+		help='The number of physical machines'
+	),
+
+	cfg.IntOpt(
+		name='no_t',
+		default=10,
+		help='The number of steps of the simulation'
+	),
+]
+CONF = cfg.CONF
+CONF.register_group(sim_group)
+CONF.register_opts(sim_opts, sim_group)
 
 # Virtual classes for commands
 class _VirtualCommand(object):
@@ -119,16 +137,11 @@ for name, cs in inspect.getmembers(sys.modules[__name__], _filter_command_fn):
 
 #file generation
 if __name__ == '__main__':
-	NUM_T = 10
-	NUM_PM = 5
+	CONF(default_config_files=['sim.conf', ])
+	NUM_T = CONF.general.no_t
+	NUM_PM = CONF.general.no_pms
 	
-	cmds_history = {
-		'history': [],
-		'cfg': {
-			'pms': NUM_PM
-			#other configuration parameters
-		}
-	}
+	cmds_history = []
 
 	status = {
 		'id': 0,
@@ -140,10 +153,9 @@ if __name__ == '__main__':
 			cmd = random.choice(CMDS.values())().execute_virtual(status)
 		else: #there are no virtual machines... let's spawn one!
 			cmd = CMDS['boot']().execute_virtual(status)
-		cmds_history['history'].append(cmd)
+		cmds_history.append(cmd)
 
 	import json
-	from sim.utils import HISTORY_FILE
 	with open(HISTORY_FILE, 'w') as out:
 		json.dump(cmds_history, out)
 
