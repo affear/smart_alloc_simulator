@@ -1,8 +1,8 @@
 from sim.nova.compute import rpcapi
 
 ## This command should ideally be run every time
-## someone calls a command using novaclient,
-## but we run it here
+## someone calls a command using novaclient and nova-api service,
+## but we run it here, because we do not have nova-api
 from sim.nova import config
 config.init_conf()
 
