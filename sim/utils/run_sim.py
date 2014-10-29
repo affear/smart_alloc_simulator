@@ -1,8 +1,10 @@
 # The real simulation
 if __name__ == '__main__':
-	from sim.utils import HISTORY_FILE, LOG_FILE, logger
+	HISTORY_FILE = 'sim_history.json'
+	from sim.utils import log_utils
 	from sim.utils.sim_file_gen import CMDS 
 	import json
+	import logging
 
 	cmds_list = []
 	with open(HISTORY_FILE, 'r') as f:
@@ -18,7 +20,10 @@ if __name__ == '__main__':
 		for cmd in cmds_list:
 			cmd.execute()
 
+	log_utils.setup_logger('sim', log_utils.SIM_LOG_FILE)
+	logger = logging.getLogger('sim')
+
 	logger.info('Simulation started')
 	do_sim()
 	logger.info('Simulation ended')
-	print 'Simulation ended! Results in ' + LOG_FILE
+	print 'Simulation ended! Read logs for details'

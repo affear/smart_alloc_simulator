@@ -1,5 +1,6 @@
 import logging
 
+SIM_LOG_FILE = 'logs/sim.log'
 COMPUTE_LOG_FILE = 'logs/compute.log'
 SCHEDULER_LOG_FILE = 'logs/scheduler.log'
 
