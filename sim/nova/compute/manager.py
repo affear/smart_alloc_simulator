@@ -26,8 +26,10 @@ if __name__ == '__main__':
 	from sim.utils import log_utils
 	log_utils.setup_logger('compute', log_utils.COMPUTE_LOG_FILE)
 
+	CONF = cfg.CONF
+	CONF.import_opt('compute_topic', 'sim.nova.compute.rpcapi')
 	transport = messaging.get_transport(cfg.CONF)
-	target = messaging.Target(topic='compute', server='compute1')
+	target = messaging.Target(topic=CONF.compute_topic, server='compute1')
 	endpoints = [ComputeManager(), ]
 	server = messaging.get_rpc_server(transport, target, endpoints,
 																			executor='blocking')
