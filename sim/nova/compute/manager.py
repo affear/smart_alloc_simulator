@@ -24,16 +24,14 @@ class ComputeManager(object):
 
 if __name__ == '__main__':
 	from sim.utils import log_utils
+	from sim.nova import rpc
+	from sim.nova import config
 	log_utils.setup_logger('compute', log_utils.COMPUTE_LOG_FILE)
 
 	# as they do in OpenStack
+	config.init_conf()
 	CONF = cfg.CONF
 	CONF.import_opt('compute_topic', 'sim.nova.compute.rpcapi')
-	CONF.import_opt('host', 'sim.nova.compute')
-	transport = messaging.get_transport(cfg.CONF)
-	target = messaging.Target(topic=CONF.compute_topic, server=CONF.host)
-	endpoints = [ComputeManager(), ]
-	server = messaging.get_rpc_server(transport, target, endpoints,
-																			executor='blocking')
+
+	server = rpc.get_server(CONF.compute_topic, [ComputeManager(), ])
 	server.start()
-	#server.wait()

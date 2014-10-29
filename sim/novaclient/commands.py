@@ -1,5 +1,11 @@
 from sim.nova.compute import rpcapi
 
+## This command should ideally be run every time
+## someone calls a command using novaclient,
+## but we run it here
+from sim.nova import config
+config.init_conf()
+
 class _Command(object):
 	'''
 		The abstract command interface

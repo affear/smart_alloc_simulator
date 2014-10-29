@@ -1,6 +1,6 @@
 from oslo import messaging
 from oslo.config import cfg
-
+from sim.nova import rpc
 # as they do in OpenStack
 rpcapi_opts = [
 	cfg.StrOpt(
@@ -16,9 +16,7 @@ CONF.register_opts(rpcapi_opts)
 class ComputeTaskAPI(object):
 	def __init__(self):
 		super(ComputeTaskAPI, self).__init__()
-		transport = messaging.get_transport(cfg.CONF)
-		target = messaging.Target(topic=CONF.compute_topic)
-		self.client = messaging.RPCClient(transport, target)
+		self.client = rpc.get_client(CONF.compute_topic)
 
 	def build_instance(self, id, flavor):
 		#TODO implement the rest
