@@ -1,13 +1,16 @@
 # The real simulation
 if __name__ == '__main__':
-	HISTORY_FILE = 'sim_history.json'
 	from sim.utils import log_utils
 	from sim.utils.sim_file_gen import CMDS 
-	import json
-	import logging
+	from sim import config
+	from oslo.config import cfg
+	import json, logging
+
+	config.init_conf()
+	CONF = cfg.CONF
 
 	cmds_list = []
-	with open(HISTORY_FILE, 'r') as f:
+	with open(CONF.sim.history_file, 'r') as f:
 		data = json.load(f)
 		#TODO use cfg to create PMs and so on so forth
 		def mapping_fn(cmd_string):
@@ -20,7 +23,7 @@ if __name__ == '__main__':
 		for cmd in cmds_list:
 			cmd.execute()
 
-	log_utils.setup_logger('sim', log_utils.SIM_LOG_FILE)
+	log_utils.setup_logger('sim', CONF.logs.sim_log_file)
 	logger = logging.getLogger('sim')
 
 	logger.info('Simulation started')

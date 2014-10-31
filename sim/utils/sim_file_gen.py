@@ -1,20 +1,18 @@
-HISTORY_FILE = 'sim_history.json'
 from sim.novaclient import commands
 # export simulation configurations
 from oslo.config import cfg
 
-sim_group = cfg.OptGroup(name='general')
+sim_group = cfg.OptGroup(name='sim')
 sim_opts = [
-	cfg.IntOpt(
-		'no_pms',
-		default=5,
-		help='The number of physical machines'
-	),
-
 	cfg.IntOpt(
 		name='no_t',
 		default=10,
 		help='The number of steps of the simulation'
+	),
+	cfg.StrOpt(
+		name='history_file',
+		default='sim_history.json',
+		help='The output file of this script'
 	),
 ]
 CONF = cfg.CONF
@@ -138,8 +136,7 @@ for name, cs in inspect.getmembers(sys.modules[__name__], _filter_command_fn):
 #file generation
 if __name__ == '__main__':
 	CONF(default_config_files=['sim.conf', ])
-	NUM_T = CONF.general.no_t
-	NUM_PM = CONF.general.no_pms
+	NUM_T = CONF.sim.no_t
 	
 	cmds_history = []
 
@@ -156,7 +153,7 @@ if __name__ == '__main__':
 		cmds_history.append(cmd)
 
 	import json
-	with open(HISTORY_FILE, 'w') as out:
+	with open(CONF.sim.history_file, 'w') as out:
 		json.dump(cmds_history, out)
 
-	print 'File ' + HISTORY_FILE + ' succesfully generated!'
+	print ' '.join(['File', CONF.sim.history_file, 'succesfully generated!'])

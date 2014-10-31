@@ -25,13 +25,14 @@ class ComputeManager(object):
 if __name__ == '__main__':
 	from sim.utils import log_utils
 	from sim.nova import rpc
-	from sim.nova import config
-	log_utils.setup_logger('compute', log_utils.COMPUTE_LOG_FILE)
+	from sim import config
 
 	# as they do in OpenStack
 	config.init_conf()
 	CONF = cfg.CONF
 	CONF.import_opt('compute_topic', 'sim.nova.compute.rpcapi')
+	#CONF.import_opt('compute_log_file', 'sim.utils.log_utils')
+	log_utils.setup_logger('compute', CONF.logs.compute_log_file)
 
 	server = rpc.get_server(CONF.compute_topic, [ComputeManager(), ])
 	server.start()
