@@ -93,29 +93,29 @@ class Host(Base):
 
 #CRUD Operations
 
-def create(id, vcpus, memory_mb, local_gb, hostname):
+def create_host(id, vcpus, memory_mb, local_gb, hostname):
 
 	with session_scope() as session:
 		Host()._create(session, id, vcpus, memory_mb, local_gb, hostname)
 
 @contextmanager
-def get(id):
+def get_host(id):
 	host = None
 	
 	with session_scope() as session:
 		yield Host()._get(session, id)
 @contextmanager	
-def get_all():
+def get_all_hosts():
 
 	with session_scope() as session:
 		yield Host()._get_all(session)
 
-def update(id, **kwargs):
+def update_host(id, **kwargs):
 		
 	with session_scope() as session:
 		Host()._update(session, id, **kwargs)
 
-def delete(id):
+def delete_host(id):
 
 	with session_scope() as session:
 		Host()._delete(session, id)
