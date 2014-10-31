@@ -1,3 +1,5 @@
+from oslo.config import cfg
+
 concrete_group = cfg.OptGroup(name='concrete')
 concrete_opts = [
 	cfg.IntOpt(
