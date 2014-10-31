@@ -21,4 +21,4 @@ class SchedulerAPI(object):
 		self.client = messaging.RPCClient(transport, target)
 
 	def select_destinations(self, flavor):
-		client.cast({}, 'select_destinations', flavor=flavor)
+		return client.call({}, 'select_destinations', flavor=flavor)
