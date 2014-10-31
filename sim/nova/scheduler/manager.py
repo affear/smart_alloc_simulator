@@ -20,11 +20,13 @@ class SchedulerManager(object):
 
 if __name__ == '__main__':
 
-	log_utils.setup_logger('scheduler', log_utils.SCHEDULER_LOG_FILE)
 
 	CONF = cfg.CONF
 	CONF.import_opt('scheduler_topic', 'sim.nova.scheduler.rpcapi')
 	CONF.import_opt('host', 'sim.nova.compute')
+
+	log_utils.setup_logger('scheduler', CONF.logs.scheduler_log_file)
+
 	transport = messaging.get_transport(cfg.CONF)
 	target = messaging.Target(topic=CONF.scheduler_topic, server=CONF.compute)
 	endpoints = [ComputeTaskManager(), ]

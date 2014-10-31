@@ -3,10 +3,9 @@ from sqlalchemy.ext	.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker	
 from sqlalchemy import create_engine
 
+DB_FILE_NAME = 'compute_node.db'
 
 Base = declarative_base()
-engine = create_engine('sqlite:///compute_node.db')
-Base.metadata.bind = engine
 
 class Host(Base):
 	""""Class that declares the compute_node table which simulates the 
@@ -46,23 +45,8 @@ class Host(Base):
 	# #List of supported instances
 	# supported_instances = Column(Text(), nullable=True)
 
-class ExistingIdError(Exception):
-	def __init__(self, existingId):
-		self.existingId = existingId
-	def __str__(self):
-		return repr("Entity with id %d already exists" % self.existingId)
-		
-class MissingIdError(Exception):
-	def __init__(self, missingId):
-		self.missingId = missingId
-	def __str__(self):
-		return repr("Entity with id %d doesn't exist" % self.missingId)
 
-def _open_session():
-	"""Opens and returns the DB session"""
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
-	return session
+
 
 #CRUD Operations
 
@@ -110,8 +94,6 @@ def update(id, **kwargs):
 		session.query(Host).filter(Host.id == id).update(kwargs)
 		session.commit()
 
-
-
 def delete(id):
 	
 	session = _open_session()
@@ -121,28 +103,25 @@ def delete(id):
 	else:
 		session.commit()
 
-def db_init():
-	""""Creates the DB"""
-	engine = create_engine('sqlite:///compute_node.db')
-	Base.metadata.create_all(engine)
+
+#Exceptions
+
+class ExistingIdError(Exception):
+	def __init__(self, existingId):
+		self.existingId = existingId
+	def __str__(self):
+		return repr("Entity with id %d already exists" % self.existingId)
+		
+class MissingIdError(Exception):
+	def __init__(self, missingId):
+		self.missingId = missingId
+	def __str__(self):
+		return repr("Entity with id %d doesn't exist" % self.missingId)
 
 
-def db_populate():
-	"""Populates the DB"""
-	try:
-		create(1,8,1024,60,"compute1")
-		create(2,12,8000,160,"compute2")
-		create(3,8,16000,120,"compute3")
-		create(4,8,8000,60,"compute4")
-		create(5,12,8000,100,"compute5")
-		create(6,8,1024,60,"compute6")
-	except Exception as e:
-		print e
-
-
-if __name__ == '__main__':
-	db_init()
-	db_populate()
-
-
-
+def _open_session():
+	"""Opens and returns the DB session"""
+	engine = create_engine('sqlite:///' + DB_FILE_NAME)
+	DBSession = sessionmaker(bind=engine)
+	session = DBSession()
+	return session
