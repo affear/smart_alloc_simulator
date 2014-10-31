@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.ext	.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker	
 from sqlalchemy import create_engine
+from contextlib import contextmanager
 
 DB_FILE_NAME = 'compute_node.db'
 
@@ -45,63 +46,79 @@ class Host(Base):
 	# #List of supported instances
 	# supported_instances = Column(Text(), nullable=True)
 
+	def _create(self, session, id, vcpus, memory_mb, local_gb, hostname):
 
+		if session.query(Host).filter(Host.id == id).count() > 0:
+			raise ExistingIdError(id)
+		else:
+			#Adds the new host and commits
+			new_host = Host(id=id, vcpus=vcpus, memory_mb=memory_mb, local_gb=local_gb, vcpus_used=0, local_gb_used=0, memory_mb_used=0, running_vms=0, hostname=hostname)
+			session.add(new_host)
+			session.commit()
+			return new_host	
+
+	def _get(self, session, id):
+
+		#Checks if the id already exists
+		host = session.query(Host).filter(Host.id == id).one()
+
+		if not host:
+			raise MissingIdError(id)
+		else:
+			return host
+
+	def _get_all(self, session):
+
+		hosts = session.query(Host).all()
+		return hosts
+
+	def _update(self, session, id, **kwargs):
+		
+		#Checks if the id already exists
+		host = session.query(Host).filter(Host.id == id).all()
+		if not host:
+			raise MissingIdError(id)
+		else:
+			updated_host = session.query(Host).filter(Host.id == id).update(kwargs)
+			session.commit()
+			return updated_host
+
+	def _delete(self, session, id):
+	
+		if session.query(Host).filter(Host.id == id).delete() == 0:
+			raise MissingIdError(id)
+		else:
+			session.commit()
 
 
 #CRUD Operations
 
 def create(id, vcpus, memory_mb, local_gb, hostname):
 
-	session = _open_session()
+	with session_scope() as session:
+		Host()._create(session, id, vcpus, memory_mb, local_gb, hostname)
 
-	#Checks if the id already exists
-	if session.query(Host).filter(Host.id == id).count() > 0:
-		raise ExistingIdError(id)
-	else:
-		#Adds the new host and commits
-		new_host = Host(id=id, vcpus=vcpus, memory_mb=memory_mb, local_gb=local_gb, vcpus_used=0, local_gb_used=0, memory_mb_used=0, running_vms=0, hostname=hostname)
-		session.add(new_host)
-		session.commit()
-		return new_host
-
+@contextmanager
 def get(id):
+	host = None
 	
-	session = _open_session()
-
-	#Checks if the id already exists
-	host = session.query(Host).filter(Host.id == id).one()
-	if not host:
-		raise MissingIdError(id)
-	else:
-		return host
-	
+	with session_scope() as session:
+		yield Host()._get(session, id)
+@contextmanager	
 def get_all():
 
-	session = _open_session()
-
-	hosts = session.query(Host).all()
-	return hosts
+	with session_scope() as session:
+		yield Host()._get_all(session)
 
 def update(id, **kwargs):
 		
-	session = _open_session()
-
-	#Checks if the id already exists
-	host = session.query(Host).filter(Host.id == id).all()
-	if not host:
-		raise MissingIdError(id)
-	else:
-		session.query(Host).filter(Host.id == id).update(kwargs)
-		session.commit()
+	with session_scope() as session:
+		Host()._update(session, id, **kwargs)
 
 def delete(id):
-	
-	session = _open_session()
 
-	if session.query(Host).filter(Host.id == id).delete() == 0:
-		raise MissingIdError(id)
-	else:
-		session.commit()
+	with session_scope() as session:
+		Host()._delete(session, id)
 
 
 #Exceptions
@@ -119,9 +136,17 @@ class MissingIdError(Exception):
 		return repr("Entity with id %d doesn't exist" % self.missingId)
 
 
-def _open_session():
-	"""Opens and returns the DB session"""
+@contextmanager
+def session_scope():
 	engine = create_engine('sqlite:///' + DB_FILE_NAME)
-	DBSession = sessionmaker(bind=engine)
-	session = DBSession()
-	return session
+	Session = sessionmaker(bind=engine)
+	session = Session()
+
+	try:
+		yield session
+		session.commit()
+	except:
+		session.rollback()
+		raise
+	finally:
+		session.close()
