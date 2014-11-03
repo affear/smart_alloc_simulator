@@ -37,6 +37,11 @@ concrete_opts = [
 		],
 		help='The phisycal machines used during the simulation'
 	),
+	cfg.StrOpt(
+		'db_file',
+		default='db.db',
+		help='The file for the sqlite db'
+	)
 ]
 CONF = cfg.CONF
 CONF.register_group(concrete_group)
