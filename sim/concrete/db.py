@@ -1,6 +1,9 @@
 from peewee import *
+from oslo.config import cfg
+CONF = cfg.CONF
+CONF.import_group('concrete', 'sim.concrete')
 
-db = SqliteDatabase('db_file.db')
+db = SqliteDatabase(CONF.concrete.db_file)
 
 class Base(Model):
 	class Meta:
@@ -12,7 +15,6 @@ class Host(Base):
 	"""
 
 	def __repr__(self):
-
 		return "{\nhostname : %s\n vcpus : %d/%d\n memory_mb : %d/%d\n local_gb : %d/%d\n running_vms : %d\n}" % (self.hostname, self.vcpus_used, self.vcpus,self.memory_mb_used,self.memory_mb,self.local_gb_used,self.local_gb,self.running_vms)
 
 
@@ -30,7 +32,7 @@ class Host(Base):
 	#Hostname
 	@property
 	def hostname(self):
-	    return 'compute' + str(self.id)
+		return 'compute' + str(self.id)
 	
 
 	class Meta:
@@ -38,9 +40,6 @@ class Host(Base):
 
 
 class VM(Base):
-
 	id = IntegerField(primary_key=True)
-
 	flavor = TextField()
-
 	host = ForeignKeyField(Host, related_name='vms')
