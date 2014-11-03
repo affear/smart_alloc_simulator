@@ -1,5 +1,6 @@
 from peewee import *
 from oslo.config import cfg
+from sim.nova import METRICS
 CONF = cfg.CONF
 CONF.import_group('concrete', 'sim.concrete')
 
@@ -45,6 +46,26 @@ class Host(Base):
 	def hostname(self):
 		return 'compute' + str(self.id)
 
+	def add_vm(self, vm):
+		assert self.vcpus_used + vm.flavor[METRICS.VCPU] <= self.vcpus
+		assert self.memory_mb_used + vm.flavor[METRICS.RAM] <= self.memory_mb
+		assert self.local_gb_used + vm.flavor[METRICS.DISK] <= self.local_gb
+
+		self.vcpus_used += vm.flavor[METRICS.VCPU]
+		self.memory_mb_used += vm.flavor[METRICS.RAM]
+		self.local_gb_used += vm.flavor[METRICS.DISK]
+		self.save()
+
+	def remove_vm(self, vm):
+		assert self.vcpus_used - vm.flavor[METRICS.VCPU] >= 0
+		assert self.memory_mb_used - vm.flavor[METRICS.RAM] >= 0
+		assert self.local_gb_used - vm.flavor[METRICS.DISK] >= 0
+
+		self.vcpus_used -= vm.flavor[METRICS.VCPU]
+		self.memory_mb_used -= vm.flavor[METRICS.RAM]
+		self.local_gb_used -= vm.flavor[METRICS.DISK]
+		self.save()
+
 #accessor field
 import json
 class JSONField(Field):
@@ -67,11 +88,12 @@ class VM(Base):
 
 	def move(self, new_flavor, new_host):
 		self.flavor = new_flavor
+		self.host.remove_vm(self)
 		self.host = new_host
+		self.host.add_vm(self)
 		self.save()
 
 if __name__ == "__main__":
-	from sim.nova import METRICS
 	from sim.utils import log_utils
 	import logging
 
