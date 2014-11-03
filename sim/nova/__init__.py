@@ -3,10 +3,10 @@
 """
 
 #some constants
-def _enum(**enums):
+def enum(**enums):
 	return type('Enum', (), enums)
 
-METRICS = _enum(VCPU='vcpu', RAM='ram', DISK='disk')
+METRICS = enum(VCPU='vcpu', RAM='ram', DISK='disk')
 
 # $ nova flavor-list
 # +----+-----------+-----------+------+-----------+\+-------+-\+-------------+
@@ -18,7 +18,7 @@ METRICS = _enum(VCPU='vcpu', RAM='ram', DISK='disk')
 # | 4  | m1.large  | 8192      | 10   | 80        |\| 4     | \| {}          |
 # | 5  | m1.xlarge | 16384     | 10   | 160       |/| 8     | /| {}          |
 # +----+-----------+-----------+------+-----------+\+-------+-\+-------------+
-FLAVORS = _enum(
+FLAVORS = enum(
 	TINY={
 		'name': 'tiny',
 		METRICS.VCPU: 1,
