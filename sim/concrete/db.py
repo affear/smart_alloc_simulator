@@ -62,6 +62,14 @@ class VM(Base):
 	flavor = JSONField()
 	host = ForeignKeyField(Host, related_name='vms')
 
+	def __repr__(self):
+		return 'flavor: %s, host_id: %d' % (self.flavor['name'], self.host.id)
+
+	def move(self, new_flavor, new_host):
+		self.flavor = new_flavor
+		self.host = new_host
+		self.save()
+
 if __name__ == "__main__":
 	from sim.nova import METRICS
 	from sim.utils import log_utils
