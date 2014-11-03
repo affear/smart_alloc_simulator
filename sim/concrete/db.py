@@ -39,31 +39,33 @@ class Host(Base):
 	local_gb_used = IntegerField(default=0)
 
 	#Number of VMs running on the host
-	running_vms = IntegerField(default=0)
+	@property
+	def running_vms(self):
+		return self.vms.count()
 
 	#Hostname
 	@property
 	def hostname(self):
 		return 'compute' + str(self.id)
 
-	def add_vm(self, vm):
-		assert self.vcpus_used + vm.flavor[METRICS.VCPU] <= self.vcpus
-		assert self.memory_mb_used + vm.flavor[METRICS.RAM] <= self.memory_mb
-		assert self.local_gb_used + vm.flavor[METRICS.DISK] <= self.local_gb
+	def stats_up(self, flavor):
+		assert self.vcpus_used + flavor[METRICS.VCPU] <= self.vcpus
+		assert self.memory_mb_used + flavor[METRICS.RAM] <= self.memory_mb
+		assert self.local_gb_used + flavor[METRICS.DISK] <= self.local_gb
 
-		self.vcpus_used += vm.flavor[METRICS.VCPU]
-		self.memory_mb_used += vm.flavor[METRICS.RAM]
-		self.local_gb_used += vm.flavor[METRICS.DISK]
+		self.vcpus_used += flavor[METRICS.VCPU]
+		self.memory_mb_used += flavor[METRICS.RAM]
+		self.local_gb_used += flavor[METRICS.DISK]
 		self.save()
 
-	def remove_vm(self, vm):
-		assert self.vcpus_used - vm.flavor[METRICS.VCPU] >= 0
-		assert self.memory_mb_used - vm.flavor[METRICS.RAM] >= 0
-		assert self.local_gb_used - vm.flavor[METRICS.DISK] >= 0
+	def stats_down(self, flavor):
+		assert self.vcpus_used - flavor[METRICS.VCPU] >= 0
+		assert self.memory_mb_used - flavor[METRICS.RAM] >= 0
+		assert self.local_gb_used - flavor[METRICS.DISK] >= 0
 
-		self.vcpus_used -= vm.flavor[METRICS.VCPU]
-		self.memory_mb_used -= vm.flavor[METRICS.RAM]
-		self.local_gb_used -= vm.flavor[METRICS.DISK]
+		self.vcpus_used -= flavor[METRICS.VCPU]
+		self.memory_mb_used -= flavor[METRICS.RAM]
+		self.local_gb_used -= flavor[METRICS.DISK]
 		self.save()
 
 #accessor field
@@ -87,13 +89,13 @@ class VM(Base):
 		return 'flavor: %s, host_id: %d' % (self.flavor['name'], self.host.id)
 
 	def prepared(self):
-		self.host.add_vm(self)
+		self.host.stats_up(self.flavor)
 
 	def move(self, new_flavor, new_host):
-		self.host.remove_vm(self)
+		self.host.stats_down(self.flavor)
 		self.flavor = new_flavor
 		self.host = new_host
-		self.host.add_vm(self)
+		self.host.stats_up(self.flavor)
 		self.save()
 
 if __name__ == "__main__":
