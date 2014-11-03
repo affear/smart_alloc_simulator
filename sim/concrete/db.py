@@ -86,9 +86,12 @@ class VM(Base):
 	def __repr__(self):
 		return 'flavor: %s, host_id: %d' % (self.flavor['name'], self.host.id)
 
+	def prepared(self):
+		self.host.add_vm(self)
+
 	def move(self, new_flavor, new_host):
-		self.flavor = new_flavor
 		self.host.remove_vm(self)
+		self.flavor = new_flavor
 		self.host = new_host
 		self.host.add_vm(self)
 		self.save()
