@@ -1,5 +1,5 @@
 from oslo.config import cfg
-from nova import enum, METRICS
+from sim.nova import enum, METRICS
 
 PM_TYPES = enum(
 	STD_PM={
