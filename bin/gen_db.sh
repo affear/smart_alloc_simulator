@@ -1,2 +1,2 @@
 #!/bin/sh
-python sim/utils/db_gen.py
+python sim/concrete/db.py
