@@ -18,6 +18,11 @@ log_opts = [
 		default='logs/scheduler.log',
 		help='Scheduler log file'
 	),
+	cfg.StrOpt(
+		'db_log_file',
+		default='logs/db.log',
+		help='Database log file'
+	),
 ]
 CONF = cfg.CONF
 CONF.register_group(log_group)
