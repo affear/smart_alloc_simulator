@@ -8,7 +8,8 @@ NOTIFIER = None
 def init(conf):
 	global TRANSPORT, NOTIFIER
 	TRANSPORT = messaging.get_transport(conf)
-	NOTIFIER = messaging.Notifier(TRANSPORT)
+	driver = 'messaging'
+	NOTIFIER = messaging.Notifier(TRANSPORT, driver=driver)
 
 def get_client(topic):
 	assert TRANSPORT is not None
