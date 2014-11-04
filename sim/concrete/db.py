@@ -2,7 +2,6 @@ from peewee import *
 
 db = SqliteDatabase('db_file.db')
 
-
 class Base(Model):
 	class Meta:
 		database = db
