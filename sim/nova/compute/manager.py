@@ -1,9 +1,13 @@
 from oslo import messaging
 from oslo.config import cfg
+from sim.nova import rpc
+from sim.nova.scheduler import rpcapi as scheduler_rpcapi
+from sim.concrete import db
 import logging
 
 class ComputeManager(object):
 	logger = logging.getLogger('compute')
+	scheduler_client = scheduler_rpcapi.SchedulerAPI()
 
 	def _log_info(self, task_name, *args):
 		args = list(args)
@@ -12,6 +16,8 @@ class ComputeManager(object):
 		args.insert(0, 'executing')
 		args = map(lambda a: str(a), args)
 		self.logger.info(' '.join(args))
+		#TODO change 'compute1' to get real hostname
+		self.notifier = rpc.get_notifier('compute1')
 
 	def build_instance(self, ctx, id, flavor):
 		# 1. select destinations from scheduler --> https://github.com/openstack/nova/blob/master/nova/conductor/manager.py#L613
@@ -21,7 +27,13 @@ class ComputeManager(object):
 		# 5. save instance to DB --> https://github.com/openstack/nova/blob/master/nova/compute/manager.py#L2100
 		# 6. spawn --> https://github.com/openstack/nova/blob/master/nova/compute/manager.py#L2104
 		# 7. notify end --> https://github.com/openstack/nova/blob/master/nova/compute/manager.py#L2173
-		self._log_info('boot', id, flavor['name'])
+		
+		#host = self.scheduler_client.select_destinations(flavor)
+		#vm = db.VM.create(id=id, flavor=flavor, host=host)
+		#self._log_info('boot', vm)
+		#TODO remove comments and make it work
+		self.notifier.info({}, 'compute.create', {'msg': 'vm created'})
+
 
 	def delete(self, ctx, id):
 		# 1. delete image --> https://github.com/openstack/nova/blob/master/nova/compute/api.py#L1544
@@ -63,7 +75,6 @@ class ComputeManager(object):
 
 if __name__ == '__main__':
 	from sim.utils import log_utils
-	from sim.nova import rpc
 	from sim import config
 
 	# as they do in OpenStack
