@@ -4,7 +4,7 @@ from oslo.config import cfg
 rpcapi_opts = [
 	cfg.StrOpt(
 		'scheduler_topic',
-		default='scheduler'
+		default='scheduler',
 		help='The topic scheduler listen on'
 	),
 ]
