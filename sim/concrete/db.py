@@ -6,6 +6,18 @@ CONF.import_group('concrete', 'sim.concrete')
 
 db = SqliteDatabase(CONF.concrete.db_file, fields={'json': 'json'})
 
+# logging
+from sim.utils.log_utils import setup_logger
+import logging
+setup_logger('db', CONF.logs.db_log_file)
+logger = logging.getLogger('db')
+
+def log_stats():
+	'''
+		Prints the current status of the hosts
+	'''
+	logger.info(list(Host.select()))
+
 class Base(Model):
 	class Meta:
 		database = db
@@ -98,6 +110,10 @@ class VM(Base):
 		self.host.stats_up(self.flavor)
 		self.save()
 
+	def terminate(self):
+		self.host.stats_down(self.flavor)
+		self.delete_instance()
+
 if __name__ == "__main__":
 	from sim.utils import log_utils
 	import logging
@@ -109,15 +125,17 @@ if __name__ == "__main__":
 	logger = logging.getLogger('db')
 
 	#Populates the db with PM
-	for pm in CONF.concrete.pms:
-		try:
-			Host.create(
-				vcpus=pm[METRICS.VCPU],
-				memory_mb=pm[METRICS.RAM],
-				local_gb=pm[METRICS.DISK]
-			)
-		except Exception as e:
-			logger.error(e)
+	# This is much faster
+	with db.transaction():
+		for pm in CONF.concrete.pms:
+			try:
+				Host.create(
+					vcpus=pm[METRICS.VCPU],
+					memory_mb=pm[METRICS.RAM],
+					local_gb=pm[METRICS.DISK]
+				)
+			except Exception as e:
+				logger.error(e)
 
-		for h in Host.select():
-			print h
+	for h in Host.select():
+		print h
