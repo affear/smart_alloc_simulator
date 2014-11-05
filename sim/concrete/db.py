@@ -128,9 +128,6 @@ class VM(Base):
 	def __repr__(self):
 		return 'flavor: %s, host_id: %d' % (self.flavor['name'], self.host.id)
 
-	def prepared(self):
-		self.host.stats_up(self.flavor)
-
 	def move(self, new_flavor, new_host):
 		self.host.stats_down(self.flavor)
 		self.flavor = new_flavor

@@ -59,17 +59,19 @@ class ComputeManager(object):
 		
 		notifier = rpc.get_notifier(self.hostname)
 		# 1
-		dest = self.scheduler_client.select_destinations(flavor)[0]
-		#dest = db.Host.select().get()
-		if not dest:
+		dest_id = self.scheduler_client.select_destinations(flavor)
+		if not dest_id:
 			self._log_info('boot', 'No destination found')
 			return
+
+		dest = db.Host.select().where(db.Host.id == dest_id).get()
 		# 2 ...
 		# 3
 		notifier.info({}, 'compute.instance.create.start', {'flavor': flavor})
 		# 4 ...
 		# 5
 		vm = db.VM.create(id=id, flavor=flavor, host=dest)
+		dest.stats_up(flavor)
 		# 6
 		# SPAWNING... we cannot spawn real VMs
 		# 7
@@ -131,13 +133,14 @@ class ComputeManager(object):
 		notifier.info({}, 'compute.instance.resize.start', {'vm': vm})
 		# stats down to perform a right calculus for the host
 		vm.host.stats_down(vm.flavor)
-		dest = self.scheduler_client.select_destinations(flavor)[0]
+		dest_id = self.scheduler_client.select_destinations(flavor)
 		vm.host.stats_up(vm.flavor)
 		#TODO remove
 		#dest = db.Host.select().get()
-		if not dest:
-			self._log_info('boot', 'No destination found')
+		if not dest_id:
+			self._log_info('resize', 'No destination found')
 			return
+		dest = db.Host.select().where(db.Host.id == dest_id).get()
 		# ok, now we can move
 		vm.move(new_flavor=flavor, new_host=dest)
 		# notify end
