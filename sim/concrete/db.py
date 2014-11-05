@@ -18,6 +18,21 @@ def log_stats():
 	'''
 	logger.info(list(Host.select()))
 
+def get_snapshot():
+	'''
+		Returns a tuple of total consumption and number of pms
+		at the moment the function is called (k, no_pms).
+		The consumption is calculated multiplying the consumption per vcpu by
+		vcpus currently used.
+	'''
+	active_hosts = Host.select().where(Host.running_vms != 0)
+	no_pms = active_hosts.count()
+	def reduce_fn(accum, host):
+		accum += host.vcpus_used * host.kxvcpu
+		return accum
+	k = reduce(reduce_fn, active_hosts)
+	return k, no_pms
+
 class Base(Model):
 	class Meta:
 		database = db
@@ -29,17 +44,27 @@ class Host(Base):
 	'''
 
 	def __repr__(self):
-		return "{\nhostname : %s\n vcpus : %d/%d\n memory_mb : %d/%d\n local_gb : %d/%d\n running_vms : %d\n}" \
-			% (
-				self.hostname,
-				self.vcpus_used,
-				self.vcpus,
-				self.memory_mb_used,
-				self.memory_mb,
-				self.local_gb_used,
-				self.local_gb,
-				self.running_vms
-			)
+		s = '''
+
+				hostname: {},
+				vcpus: {}/{},
+				memory_mb: {}/{},
+				local_gb: {}/{},
+				running_vms: {},
+				kxvcpu: {}
+				
+		'''
+		return s.format(
+			self.hostname,
+			self.vcpus_used,
+			self.vcpus,
+			self.memory_mb_used,
+			self.memory_mb,
+			self.local_gb_used,
+			self.local_gb,
+			self.running_vms,
+			self.kxvcpu
+		)
 
 
 	#Base metrics (virtual CPUs, RAM, Disk) with their usage counterpart
@@ -49,6 +74,9 @@ class Host(Base):
 	vcpus_used = IntegerField(default=0)
 	memory_mb_used = IntegerField(default=0)
 	local_gb_used = IntegerField(default=0)
+
+	#fake consumption
+	kxvcpu = IntegerField(default=0)
 
 	#Number of VMs running on the host
 	@property
@@ -132,7 +160,8 @@ if __name__ == "__main__":
 				Host.create(
 					vcpus=pm[METRICS.VCPU],
 					memory_mb=pm[METRICS.RAM],
-					local_gb=pm[METRICS.DISK]
+					local_gb=pm[METRICS.DISK],
+					kxvcpu=pm[METRICS.KXVCPU]
 				)
 			except Exception as e:
 				logger.error(e)

@@ -66,5 +66,5 @@ projectrc
 sim.conf
 
 #site
-bower_components
+vendor
 node_modules
