@@ -20,11 +20,11 @@ class ComputeTaskAPI(object):
 
 	def build_instance(self, id, flavor):
 		#TODO implement the rest
-		self.client.cast({}, 'build_instance', id=id, flavor=flavor)
+		self.client.call({}, 'build_instance', id=id, flavor=flavor)
 
 	def delete(self, id):
 		#TODO implement the rest
-		self.client.cast({}, 'delete', id=id)
+		self.client.call({}, 'delete', id=id)
 
 	def resize(self, id, flavor):
 		#TODO implement the rest
