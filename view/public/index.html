@@ -1,28 +1,39 @@
 <html>
 	<head>
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-		<script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+		<script type="text/javascript" src="vendor/jquery/dist/jquery.min.js"></script>
 		<script type="text/javascript">
-			//load file
+			//load file and parse it
+			values = [
+				['t', 'kxvcpu', 'no_pms'],
+			];
 			$.get('out_chart.log',
 				function(data){
-					console.log(data);
+					//format:
+					//k1-n1,k2-n2,k3-n3,...
+					$.each(data.split(','),
+						function(index, value){
+							if(!value){
+								//the string could be empty
+								return;
+							}
+
+							bits = value.split('-');
+							kxvcpu = parseInt(bits[0]);
+							no_pms = parseInt(bits[1]);
+							values.push(['t' + index, kxvcpu, no_pms]);
+						}
+					);
 				}
 			);
 
 			google.load("visualization", "1", {packages:["corechart"]});
 			google.setOnLoadCallback(drawChart);
 			function drawChart() {
-				var data = google.visualization.arrayToDataTable([
-					['Year', 'Sales', 'Expenses'],
-					['2004',  1000,      400],
-					['2005',  1170,      460],
-					['2006',  660,       1120],
-					['2007',  1030,      540]
-				]);
+				var data = google.visualization.arrayToDataTable(values);
 
 				var options = {
-					title: 'Company Performance'
+					title: 'Simulation History'
 				};
 
 				var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
