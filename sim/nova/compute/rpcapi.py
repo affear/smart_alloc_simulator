@@ -19,14 +19,13 @@ class ComputeTaskAPI(object):
 		self.client = rpc.get_client(CONF.compute_topic)
 
 	def build_instance(self, id, flavor):
-		#TODO implement the rest
-		self.client.cast({}, 'build_instance', id=id, flavor=flavor)
+		# wait to have synchronous calls
+		self.client.call({}, 'build_instance', id=id, flavor=flavor)
 
 	def delete(self, id):
-		#TODO implement the rest
-		self.client.cast({}, 'delete', id=id)
+		# wait to have synchronous calls
+		self.client.call({}, 'delete', id=id)
 
 	def resize(self, id, flavor):
-		#TODO implement the rest
 		return self.client.call({}, 'resize', id=id, flavor=flavor)
 

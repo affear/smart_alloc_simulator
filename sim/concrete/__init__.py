@@ -19,7 +19,13 @@ PM_TYPES = enum(
 		METRICS.RAM: 32000,
 		METRICS.DISK: 4000,
 		METRICS.KXVCPU: 100,
-	}
+	},
+	# IMPOSSIBLE_PM={
+	# 	METRICS.VCPU: 10000000,
+	# 	METRICS.RAM: 10000000,
+	# 	METRICS.DISK: 4000,
+	# 	METRICS.KXVCPU: 100,
+	# }
 )
 
 concrete_group = cfg.OptGroup(name='concrete')
@@ -27,6 +33,7 @@ concrete_opts = [
 	cfg.ListOpt(
 		'pms',
 		default=[
+			#PM_TYPES.IMPOSSIBLE_PM,
 			PM_TYPES.STD_PM,
 			PM_TYPES.STD_PM,
 			PM_TYPES.STD_PM,
