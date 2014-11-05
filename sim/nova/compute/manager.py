@@ -8,6 +8,7 @@ import logging
 class ComputeManager(object):
 	logger = logging.getLogger('compute')
 	scheduler_client = scheduler_rpcapi.SchedulerAPI()
+	#TODO change 'compute1' to get real hostname
 
 	def _log_info(self, task_name, *args):
 		args = list(args)
@@ -16,8 +17,6 @@ class ComputeManager(object):
 		args.insert(0, 'executing')
 		args = map(lambda a: str(a), args)
 		self.logger.info(' '.join(args))
-		#TODO change 'compute1' to get real hostname
-		self.notifier = rpc.get_notifier('compute1')
 
 	def build_instance(self, ctx, id, flavor):
 		# 1. select destinations from scheduler --> https://github.com/openstack/nova/blob/master/nova/conductor/manager.py#L613
@@ -32,7 +31,9 @@ class ComputeManager(object):
 		#vm = db.VM.create(id=id, flavor=flavor, host=host)
 		#self._log_info('boot', vm)
 		#TODO remove comments and make it work
-		self.notifier.info({}, 'compute.create', {'msg': 'vm created'})
+		notifier = rpc.get_notifier('compute.host1')
+		notifier.info({'some': 'context'}, 'compute.create', {'some': 'payload'})
+		self._log_info('boot', {'msg': 'vm created'})
 
 
 	def delete(self, ctx, id):

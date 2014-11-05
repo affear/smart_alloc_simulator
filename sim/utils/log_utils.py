@@ -19,6 +19,11 @@ log_opts = [
 		help='Scheduler log file'
 	),
 	cfg.StrOpt(
+		'consolidator_log_file',
+		default='logs/consolidator.log',
+		help='Consolidator log file'
+	),
+	cfg.StrOpt(
 		'db_log_file',
 		default='logs/db.log',
 		help='Database log file'
