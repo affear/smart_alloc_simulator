@@ -68,3 +68,6 @@ sim.conf
 #site
 vendor
 node_modules
+
+#Idea PyCharm
+.idea
