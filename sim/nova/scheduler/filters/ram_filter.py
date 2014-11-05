@@ -1,6 +1,6 @@
 from sim.nova import METRICS
 from sim.concrete import db
-from sim.scheduler.filters import BaseFilter
+from sim.nova.scheduler.filters import BaseFilter
 
 class RamFilter(BaseFilter):
 
