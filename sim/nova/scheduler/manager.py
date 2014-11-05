@@ -15,7 +15,7 @@ class SchedulerManager(object):
 
 	def select_destinations(self, ctx, flavor):
 		self._log_info(id, flavor['name'])
-		return filter_scheduler.select_destinations(id,flavor)
+		return filter_scheduler.select_destinations(flavor)
 
 
 if __name__ == '__main__':
