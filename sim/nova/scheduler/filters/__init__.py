@@ -5,7 +5,9 @@ CONF = cfg.CONF
 filter_opts = [
 	cfg.ListOpt(
 		'default_filters',
-		default=['RamFilter', 'VCPUsFilter', 'StorageFilter'],
+		default=['sim.nova.scheduler.filters.ram_filter.RamFilter', 
+		'sim.nova.scheduler.filters.core_filter.VCPUsFilter', 
+		'sim.nova.scheduler.filters.disk_filter.StorageFilter'],
 		help='Filters to be used when not specified in the request'
 		),
 ]
