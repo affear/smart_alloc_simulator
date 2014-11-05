@@ -25,12 +25,12 @@ def get_snapshot():
 		The consumption is calculated multiplying the consumption per vcpu by
 		vcpus currently used.
 	'''
-	active_hosts = Host.select().where(Host.running_vms != 0)
-	no_pms = active_hosts.count()
+	active_hosts = filter(lambda h: h.running_vms > 0, Host.select())
+	no_pms = len(active_hosts)
 	def reduce_fn(accum, host):
 		accum += host.vcpus_used * host.kxvcpu
 		return accum
-	k = reduce(reduce_fn, active_hosts)
+	k = reduce(reduce_fn, active_hosts, 0)
 	return k, no_pms
 
 class Base(Model):
@@ -52,7 +52,7 @@ class Host(Base):
 				local_gb: {}/{},
 				running_vms: {},
 				kxvcpu: {}
-				
+
 		'''
 		return s.format(
 			self.hostname,
