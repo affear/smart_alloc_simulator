@@ -1,5 +1,6 @@
 from oslo import messaging 
 from oslo.config import cfg
+from sim.nova import rpc
 
 rpcapi_opts = [
 	cfg.StrOpt(
@@ -16,9 +17,7 @@ class SchedulerAPI(object):
 
 	def __init__(self):
 		super(SchedulerAPI, self).__init__()
-		transport = messaging.get_transport(cfg.CONF)
-		target = messaging.Target(topic=CONF.scheduler_topic)
-		self.client = messaging.RPCClient(transport, target)
+		self.client = rpc.get_client(CONF.scheduler_topic)
 
 	def select_destinations(self, flavor):
-		return client.call({}, 'select_destinations', flavor=flavor)
+		return self.client.call({}, 'select_destinations', flavor=flavor)
