@@ -1,7 +1,7 @@
 from oslo import messaging
 from oslo.config import cfg
 from sim.nova import rpc
-from sim.nova.scheduler import filter_scheduler
+from sim.nova.scheduler.filter_scheduler import FilterScheduler
 import logging
 from sim.utils import log_utils
 from sim import config
@@ -25,9 +25,10 @@ class SchedulerManager(object):
 		self.logger.info(' '.join(args))
 
 	def select_destinations(self, ctx, flavor):
-		hosts = filter_scheduler.FilterScheduler().select_destinations(flavor)
+		hosts = FilterScheduler().select_destinations(flavor)
 		self._log_info('select destination', hosts)
-		return hosts
+		# return ID to avoid circular dependency in serialization
+		return hosts[0].id if hosts else None # our "weighting" to choose the first one (for now)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ class ComputeTaskAPI(object):
 		self.client.call({}, 'build_instance', id=id, flavor=flavor)
 
 	def delete(self, id):
-		# wait to have synchronous calls
+		# wait to have synchronous calls 
 		self.client.call({}, 'delete', id=id)
 
 	def resize(self, id, flavor):
