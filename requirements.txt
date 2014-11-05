@@ -12,8 +12,8 @@ oslo.config==1.4.0
 oslo.i18n==1.0.0
 oslo.messaging==1.4.1
 oslo.utils==1.0.0
+peewee==2.4.1
 pytz==2014.7
 six==1.8.0
 stevedore==1.0.0
 wsgiref==0.1.2
-sqlalchemy==0.9.8
