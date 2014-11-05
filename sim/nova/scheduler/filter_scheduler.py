@@ -19,7 +19,7 @@ class FilterScheduler(object):
 
 	def _schedule(self, all_hosts, selected_filters, flavor):
 
-		def _class_import(self, class_path):
+		def _class_import(class_path):
 			"""Returns the class given its path as a string"""
 			mod_path = '.'.join(class_path.split('.')[0:-1])
 			class_name = class_path.split('.')[-1]
@@ -30,19 +30,18 @@ class FilterScheduler(object):
 			clazz = getattr(mod, class_name)
 			return clazz
 
-		def _filter(self, host, filters, flavor):			
+		def _filter(host, filters, flavor):			
 			for f in filters:
-				if f.host_passes(host, flavor):
-					passes = host
-				else:
-					passes = None
+				if not f.host_passes(host, flavor):
+					return False
+			return True
 
 		selected_hosts = []
 		filters = []
 
 		for sf in selected_filters:
-			filterClass = _class_import(f)
-			filters = filterClass()
+			filterClass = _class_import(sf)
+			filters.append(filterClass())
 
 		for h in all_hosts:
 			if _filter(h, filters, flavor):
@@ -60,4 +59,4 @@ class FilterScheduler(object):
 
 		selected_destinations = self._schedule(all_hosts, selected_filters, flavor)
 
-		return dest
+		return selected_destinations
