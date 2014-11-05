@@ -1,0 +1,55 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="vendor/jquery/dist/jquery.min.js"></script>
+		<script type="text/javascript">
+			//load file and parse it
+			values = [
+				['t', 'kxvcpu', 'no_pms'],
+			];
+			$.get('out_chart.log',
+				function(data){
+					//format:
+					//k1-n1,k2-n2,k3-n3,...
+					$.each(data.split(','),
+						function(index, value){
+							if(!value){
+								//the string could be empty
+								return;
+							}
+
+							bits = value.split('-');
+							kxvcpu = parseInt(bits[0]);
+							no_pms = parseInt(bits[1]);
+							values.push(['t' + index, kxvcpu, no_pms]);
+						}
+					);
+				}
+			);
+
+			google.load("visualization", "1", {packages:["corechart"]});
+			google.setOnLoadCallback(drawChart);
+			function drawChart() {
+				var data = google.visualization.arrayToDataTable(values);
+
+				var options = {
+					title: 'Simulation History'
+				};
+
+				var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+				chart.draw(data, options);
+			}
+		</script>
+	</head>
+	<body>
+		<div id="chart_div" style="width: 900px; height: 500px;"></div>
+
+		<ul>
+			<li><a href="logs/compute.log">compute.log</a></li>
+			<li><a href="logs/scheduler.log">scheduler.log</a></li>
+			<li><a href="logs/consolidator.log">consolidator.log</a></li>
+			<li><a href="logs/db.log">db.log</a></li>
+		</ul>
+	</body>
+</html>

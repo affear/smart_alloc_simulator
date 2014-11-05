@@ -6,7 +6,7 @@
 def enum(**enums):
 	return type('Enum', (), enums)
 
-METRICS = enum(VCPU='vcpu', RAM='ram', DISK='disk')
+METRICS = enum(VCPU='vcpu', RAM='ram', DISK='disk', KXVCPU='consumption_per_vcpu')
 
 # $ nova flavor-list
 # +----+-----------+-----------+------+-----------+\+-------+-\+-------------+

@@ -28,14 +28,19 @@ log_opts = [
 		default='logs/db.log',
 		help='Database log file'
 	),
+	cfg.StrOpt(
+		'out_chart_log_file',
+		default='view/public/out_chart.log',
+		help='Chart Data log file'
+	),
 ]
 CONF = cfg.CONF
 CONF.register_group(log_group)
 CONF.register_opts(log_opts, log_group)
 
-def setup_logger(name, file_name):
+def setup_logger(name, file_name, formatting='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
 	logger = logging.getLogger(name)
-	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+	formatter = logging.Formatter(formatting)
 	fileHandler = logging.FileHandler(file_name, mode='w')
 	fileHandler.setFormatter(formatter)
 	streamHandler = logging.StreamHandler()

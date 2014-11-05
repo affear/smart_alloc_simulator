@@ -7,8 +7,8 @@ import logging
 
 class ComputeManager(object):
 	logger = logging.getLogger('compute')
+	out_logger = logging.getLogger('out_chart')
 	scheduler_client = scheduler_rpcapi.SchedulerAPI()
-	#TODO change 'compute1' to get real hostname
 
 	def _log_info(self, task_name, *args):
 		args = list(args)
@@ -17,6 +17,11 @@ class ComputeManager(object):
 		args.insert(0, 'executing')
 		args = map(lambda a: str(a), args)
 		self.logger.info(' '.join(args))
+
+	def _log_out_chart(self, snapshot):
+		kxvcpu = snapshot[0]
+		no_pms = snapshot[1]
+		self.out_logger.info('-'.join([str(kxvcpu), str(no_pms)]) + ',')
 
 	def build_instance(self, ctx, id, flavor):
 		# 1. select destinations from scheduler --> https://github.com/openstack/nova/blob/master/nova/conductor/manager.py#L613
@@ -30,10 +35,13 @@ class ComputeManager(object):
 		#host = self.scheduler_client.select_destinations(flavor)
 		#vm = db.VM.create(id=id, flavor=flavor, host=host)
 		#self._log_info('boot', vm)
+
 		#TODO remove comments and make it work
+		#TODO change 'compute1' to get real hostname
 		notifier = rpc.get_notifier('compute.host1')
 		notifier.info({'some': 'context'}, 'compute.create', {'some': 'payload'})
 		self._log_info('boot', {'msg': 'vm created'})
+		self._log_out_chart(db.get_snapshot())
 
 
 	def delete(self, ctx, id):
@@ -82,8 +90,12 @@ if __name__ == '__main__':
 	config.init_conf()
 	CONF = cfg.CONF
 	CONF.import_opt('compute_topic', 'sim.nova.compute.rpcapi')
-	#CONF.import_opt('compute_log_file', 'sim.utils.log_utils')
 	log_utils.setup_logger('compute', CONF.logs.compute_log_file)
+	log_utils.setup_logger(
+		'out_chart',
+		CONF.logs.out_chart_log_file,
+		formatting='%(message)s'
+	)
 
 	server = rpc.get_server(CONF.compute_topic, [ComputeManager(), ])
 	server.start()

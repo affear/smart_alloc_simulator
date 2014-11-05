@@ -64,3 +64,7 @@ sim_history.json
 projectrc
 
 sim.conf
+
+#site
+vendor
+node_modules
