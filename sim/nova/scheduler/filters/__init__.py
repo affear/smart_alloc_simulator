@@ -6,8 +6,8 @@ filter_opts = [
 	cfg.ListOpt(
 		'default_filters',
 		default=['sim.nova.scheduler.filters.ram_filter.RamFilter', 
-		'sim.nova.scheduler.filters.core_filter.VCPUsFilter', 
-		'sim.nova.scheduler.filters.disk_filter.StorageFilter'],
+		'sim.nova.scheduler.filters.core_filter.CoreFilter', 
+		'sim.nova.scheduler.filters.disk_filter.DiskFilter'],
 		help='Filters to be used when not specified in the request'
 		),
 ]
