@@ -20,4 +20,5 @@ class SchedulerAPI(object):
 		self.client = rpc.get_client(CONF.scheduler_topic)
 
 	def select_destinations(self, flavor):
+		self.client.prepare()
 		return self.client.call({}, 'select_destinations', flavor=flavor)
