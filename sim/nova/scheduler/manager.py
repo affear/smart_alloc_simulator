@@ -26,9 +26,10 @@ class SchedulerManager(object):
 
 	def select_destinations(self, ctx, flavor):
 		hosts = FilterScheduler().select_destinations(flavor)
-		self._log_info('select destination', hosts)
 		# return ID to avoid circular dependency in serialization
-		return hosts[0].id if hosts else None # our "weighting" to choose the first one (for now)
+		host = hosts[0].id if hosts else None # our "weighting" to choose the first one (for now)
+		self._log_info('selected host', host)
+		return host
 
 
 if __name__ == '__main__':

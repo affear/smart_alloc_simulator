@@ -7,7 +7,7 @@ logger = logging.getLogger('consolidator')
 
 class Endpoints(object):
 	def info(self, ctxt, publisher_id, event_type, payload, metadata):
-		logger.info(payload)
+		logger.info(': '.join([event_type, str(payload)]))
 
 if __name__ == '__main__':
 	from sim import config

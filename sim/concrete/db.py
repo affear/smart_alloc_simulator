@@ -1,43 +1,60 @@
-from peewee import *
 from oslo.config import cfg
-from sim.nova import METRICS
+from sim.nova import METRICS, FLAVORS
+from sim.utils.log_utils import setup_logger
+from sets import Set
+import logging, memcache, pickle
+
 CONF = cfg.CONF
 CONF.import_group('concrete', 'sim.concrete')
 
-db = SqliteDatabase(CONF.concrete.db_file, fields={'json': 'json'})
+_CACHE = memcache.Client(['127.0.0.1:11211'], debug=0)
 
 # logging
-from sim.utils.log_utils import setup_logger
-import logging
 setup_logger('db', CONF.logs.db_log_file)
 logger = logging.getLogger('db')
 
-def log_stats():
-	'''
-		Prints the current status of the hosts
-	'''
-	logger.info(list(Host.select()))
+# methods to access cache
+def _get(key):
+	return pickle.loads(_CACHE.get(key))
 
-def get_snapshot():
-	'''
-		Returns a tuple of total consumption and number of pms
-		at the moment the function is called (k, no_pms).
-		The consumption is calculated multiplying the consumption per vcpu by
-		vcpus currently used.
-	'''
-	active_hosts = filter(lambda h: h.running_vms > 0, Host.select())
-	no_pms = len(active_hosts)
-	def reduce_fn(accum, host):
-		accum += host.vcpus_used * host.kxvcpu
-		return accum
-	k = reduce(reduce_fn, active_hosts, 0)
-	return k, no_pms
+def _set(key, obj):
+	_CACHE.set(key, pickle.dumps(obj))
 
-class Base(Model):
-	class Meta:
-		database = db
+def _delete(key):
+	_CACHE.delete(key)
 
-class Host(Base):
+class BaseCachedObject(object):
+	def __init__(self, **kwargs):
+		super(BaseCachedObject, self).__init__()
+		for k in kwargs:
+			setattr(self, k, kwargs[k])
+
+	@classmethod
+	def _get_key(cls, id):
+		return '#'.join([cls.__name__, str(id)])
+
+	@property
+	def key(self):
+			return type(self)._get_key(self.id)
+	
+	@classmethod
+	def get(cls, id):
+		return _get(cls._get_key(id))
+
+	def save(self, created=False):
+		_set(self.key, self)
+		self.post_save(created)
+
+	def delete(self):
+		_delete(self.key)
+
+	def post_save(self, created=False):
+		'''
+			Hook on save mathod
+		'''
+		pass
+
+class Host(BaseCachedObject):
 	'''
 		Class that declares the compute_node table which simulates the 
 		compute_nodes table in nova db; it includes only fields useful for the simulation.
@@ -66,27 +83,32 @@ class Host(Base):
 			self.kxvcpu
 		)
 
-
+	id = 0
 	#Base metrics (virtual CPUs, RAM, Disk) with their usage counterpart
-	vcpus = IntegerField(default=0)
-	memory_mb = IntegerField(default=0)
-	local_gb = IntegerField(default=0)
-	vcpus_used = IntegerField(default=0)
-	memory_mb_used = IntegerField(default=0)
-	local_gb_used = IntegerField(default=0)
+	vcpus = 0
+	memory_mb = 0
+	local_gb = 0
+	vcpus_used = 0
+	memory_mb_used = 0
+	local_gb_used = 0
 
 	#fake consumption
-	kxvcpu = IntegerField(default=0)
+	kxvcpu = 0
 
 	#Number of VMs running on the host
+	vms = Set()
 	@property
 	def running_vms(self):
-		return self.vms.count()
-
+			return len(self.vms)
+	
 	#Hostname
 	@property
 	def hostname(self):
 		return 'compute' + str(self.id)
+
+	def post_save(self, created=False):
+		if created:
+			_add_host(self.key)
 
 	def stats_up(self, flavor):
 		assert self.vcpus_used + flavor[METRICS.VCPU] <= self.vcpus
@@ -108,60 +130,102 @@ class Host(Base):
 		self.local_gb_used -= flavor[METRICS.DISK]
 		self.save()
 
-#accessor field
-import json
-class JSONField(Field):
-	db_field = 'json'
+	@staticmethod
+	def get_all():
+		h_keys = _get(ALL_HOSTS_KEY)
+		return [_get(key) for key in h_keys]
 
-	def db_value(self, value):
-		return json.dumps(value)
+class VM(BaseCachedObject):
+	id = 0
+	flavor = FLAVORS.TINY
+	_host_id = None
 
-	def python_value(self, value):
-		return json.loads(value)
-
-
-class VM(Base):
-	id = IntegerField(primary_key=True)
-	flavor = JSONField()
-	host = ForeignKeyField(Host, related_name='vms')
-
+	@property
+	def host(self):
+		# we always recharge the host... we could cache it
+		# this is way you will find things like:
+		# h = self.host, because we don't want
+		# to invoke self.host too many times
+		return Host.get(self._host_id)
+	@host.setter
+	def host(self, h):
+		h.vms.add(self.key)
+		h.save()
+		self._host_id = h.id
+	
 	def __repr__(self):
-		return 'flavor: %s, host_id: %d' % (self.flavor['name'], self.host.id)
+		return 'flavor: %s, host_id: %d' % (self.flavor['name'], self._host_id)
+
+	def post_save(self, created=False):
+		if created:
+			self.host.stats_up(self.flavor)
 
 	def move(self, new_flavor, new_host):
 		self.host.stats_down(self.flavor)
+		new_host.stats_up(new_flavor)
 		self.flavor = new_flavor
 		self.host = new_host
-		self.host.stats_up(self.flavor)
 		self.save()
 
 	def terminate(self):
-		self.host.stats_down(self.flavor)
-		self.delete_instance()
+		self_host = self.host
+		self_host.stats_down(self.flavor)
+		self_host.vms.remove(self.key) 
+		self.delete()
 
-if __name__ == "__main__":
-	from sim.utils import log_utils
-	import logging
+def log_stats():
+	'''
+		Prints the current status of the hosts
+	'''
+	logger.info(Host.get_all())
 
-	# Create DB
-	db.create_tables([Host, VM], True)
+def get_snapshot():
+	'''
+		Returns a tuple of total consumption and number of pms
+		at the moment the function is called (k, no_pms).
+		The consumption is calculated multiplying the consumption per vcpu by
+		vcpus currently used.
+	'''
+	active_hosts = filter(lambda h: h.running_vms > 0, Host.get_all())
+	no_pms = len(active_hosts)
+	def reduce_fn(accum, host):
+		accum += host.vcpus_used * host.kxvcpu
+		return accum
+	k = reduce(reduce_fn, active_hosts, 0)
+	return k, no_pms
 
-	log_utils.setup_logger('db', CONF.logs.db_log_file)
-	logger = logging.getLogger('db')
 
-	#Populates the db with PM
-	# This is much faster
-	with db.transaction():
-		for pm in CONF.concrete.pms:
-			try:
-				Host.create(
-					vcpus=pm[METRICS.VCPU],
-					memory_mb=pm[METRICS.RAM],
-					local_gb=pm[METRICS.DISK],
-					kxvcpu=pm[METRICS.KXVCPU]
-				)
-			except Exception as e:
-				logger.error(e)
+def init_db():
+	i = 0
+	for pm in CONF.concrete.pms:
+		try:
+			h = Host(
+				id=i,
+				vcpus=pm[METRICS.VCPU],
+				memory_mb=pm[METRICS.RAM],
+				local_gb=pm[METRICS.DISK],
+				kxvcpu=pm[METRICS.KXVCPU]
+			)
+			h.save(created=True)
+			i += 1
+		except Exception as e:
+			logger.error(e)
 
-	for h in Host.select():
+	for h in Host.get_all():
 		print h
+
+#TODO very unefficient
+def _add_host(key):
+	_HOSTS = _get(ALL_HOSTS_KEY)
+	_HOSTS.add(key)
+	_set(ALL_HOSTS_KEY, _HOSTS)
+
+# a way to store all hosts keys to later get them
+ALL_HOSTS_KEY = 'all_hosts'
+try:
+	_HOSTS = _get(ALL_HOSTS_KEY)
+	if not _HOSTS: raise
+except:
+	_HOSTS = Set()
+	_set(ALL_HOSTS_KEY, _HOSTS)
+	init_db()
