@@ -39,13 +39,12 @@ class ComputeManager(object):
 	scheduler_client = scheduler_rpcapi.SchedulerAPI()
 	hostname = CONF.host
 
-	def _log_info(self, task_name, *args):
+	def _log(self, method, task_name, *args):
 		args = list(args)
 		args.insert(0, ':')
 		args.insert(0, task_name)
-		args.insert(0, 'executing')
 		args = map(lambda a: str(a), args)
-		self.logger.info(' '.join(args))
+		method(' '.join(args))
 
 	@log_snapshot
 	def build_instance(self, ctx, id, flavor):
@@ -61,7 +60,7 @@ class ComputeManager(object):
 		# 1
 		dest_id = self.scheduler_client.select_destinations(flavor)
 		if not dest_id:
-			self._log_info('boot', 'No destination found')
+			self._log(self.logger.warning, 'boot', 'No destination found for', id, flavor)
 			return
 
 		dest = db.Host.get(dest_id)
@@ -77,7 +76,7 @@ class ComputeManager(object):
 		# 7
 		notifier.info({}, 'compute.instance.create.end', {'vm': vm})
 
-		self._log_info('boot', vm)
+		self._log(self.logger.info, 'boot', vm)
 
 	@log_snapshot
 	def delete(self, ctx, id):
@@ -90,14 +89,18 @@ class ComputeManager(object):
 		notifier = rpc.get_notifier(self.hostname)
 		# 1 ... we do not have image stored
 		# 2
-		vm = db.VM.get(id)
+		try:
+			vm = db.VM.get(id)
+		except db.VMNotFoundException as e:
+			self.logger.error(e.message)
+			return
 		notifier.info({}, 'compute.instance.delete.start', {'vm': vm})
 		# 3 & 4
 		vm.terminate()
 		# 5
 		notifier.info({}, 'compute.instance.delete.end', {'vm_id': id})
 
-		self._log_info('delete', id)
+		self._log(self.logger.info, 'delete', id)
 
 	@log_snapshot
 	def resize(self, ctx, id, flavor):
@@ -129,16 +132,19 @@ class ComputeManager(object):
 
 		notifier = rpc.get_notifier(self.hostname)
 		# 1 & 2 ... we do not have quotas (and also users)
-		vm = db.VM.get(id)
+		try:
+			vm = db.VM.get(id)
+		except db.VMNotFoundException as e:
+			self.logger.error(e.message)
+			return
+
 		notifier.info({}, 'compute.instance.resize.start', {'vm': vm})
 		# stats down to perform a right calculus for the host
-		vm.host.stats_down(vm.flavor)
+		vm.host.stats_down(vm.flavor).save()
 		dest_id = self.scheduler_client.select_destinations(flavor)
-		vm.host.stats_up(vm.flavor)
-		#TODO remove
-		#dest = db.Host.select().get()
+		vm.host.stats_up(vm.flavor).save()
 		if not dest_id:
-			self._log_info('resize', 'No destination found')
+			self._log(self.logger.warning, 'boot', 'No destination found for', id, flavor)
 			return
 		dest = db.Host.get(dest_id)
 		# ok, now we can move
@@ -146,7 +152,7 @@ class ComputeManager(object):
 		# notify end
 		notifier.info({}, 'compute.instance.resize.end', {'vm': vm})
 
-		self._log_info('resize', id, flavor['name'])
+		self._log(self.logger.info, 'resize', id, flavor['name'])
 
 if __name__ == '__main__':
 	server = rpc.get_server(CONF.compute_topic, [ComputeManager(), ])
