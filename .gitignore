@@ -60,7 +60,7 @@ venv
 *.db
 
 ignore
-sim_history.*
+sim_history*
 projectrc
 
 sim.conf

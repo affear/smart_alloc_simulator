@@ -5,7 +5,7 @@
 		<script type="text/javascript">
 			//load file and parse it
 			values = [
-				['t', 'kxvcpu', 'no_pms'],
+				['t', 'k_tot', 'no_pms'],
 			];
 			$.get('out_chart.log',
 				function(data){
@@ -32,8 +32,26 @@
 			function drawChart() {
 				var data = google.visualization.arrayToDataTable(values);
 
+				var TOT_K_COL = '#F44336';
+				var NO_PMS_COL = '#3F51B5';
+
 				var options = {
-					title: 'Simulation History'
+					title: 'Simulation History',
+					curveType: 'function',
+					series: {
+						0: {targetAxisIndex: 0},
+						1: {targetAxisIndex: 1}
+					},
+					hAxis: {showTextEvery: 10},
+					vAxes:{
+						0: {
+							title:'Total Consumption',
+						},
+						1: {
+							title:'Number of PMs',
+						}
+					},
+					colors: [TOT_K_COL, NO_PMS_COL, 'black']
 				};
 
 				var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
@@ -43,7 +61,7 @@
 		</script>
 	</head>
 	<body>
-		<div id="chart_div" style="width: 900px; height: 500px;"></div>
+		<div id="chart_div" style="height: 80vh;"></div>
 
 		<ul>
 			<li><a href="logs/compute.log">compute.log</a></li>
