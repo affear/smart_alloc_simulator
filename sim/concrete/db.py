@@ -13,9 +13,14 @@ _CACHE = memcache.Client(['127.0.0.1:11211'], debug=0)
 setup_logger('db', CONF.logs.db_log_file)
 logger = logging.getLogger('db')
 
+class VMNotFoundException(Exception):
+	pass
 # methods to access cache
 def _get(key):
-	return pickle.loads(_CACHE.get(key))
+	try:
+		return pickle.loads(_CACHE.get(key))
+	except:
+		raise VMNotFoundException('Could not get {}'.format(key))
 
 def _set(key, obj):
 	_CACHE.set(key, pickle.dumps(obj))
@@ -24,11 +29,6 @@ def _delete(key):
 	_CACHE.delete(key)
 
 class BaseCachedObject(object):
-	def __init__(self, **kwargs):
-		super(BaseCachedObject, self).__init__()
-		for k in kwargs:
-			setattr(self, k, kwargs[k])
-
 	@classmethod
 	def _get_key(cls, id):
 		return '#'.join([cls.__name__, str(id)])
@@ -47,6 +47,9 @@ class BaseCachedObject(object):
 
 	def delete(self):
 		_delete(self.key)
+
+	def reload(self):
+		return type(self).get(self.id)
 
 	def post_save(self, created=False):
 		'''
@@ -68,8 +71,8 @@ class Host(BaseCachedObject):
 				memory_mb: {}/{},
 				local_gb: {}/{},
 				running_vms: {},
-				kxvcpu: {}
-
+				kxvcpu: {},
+				vms: {}
 		'''
 		return s.format(
 			self.hostname,
@@ -80,23 +83,35 @@ class Host(BaseCachedObject):
 			self.local_gb_used,
 			self.local_gb,
 			self.running_vms,
-			self.kxvcpu
+			self.kxvcpu,
+			' '.join(self.vms)
 		)
 
-	id = 0
 	#Base metrics (virtual CPUs, RAM, Disk) with their usage counterpart
-	vcpus = 0
-	memory_mb = 0
-	local_gb = 0
-	vcpus_used = 0
-	memory_mb_used = 0
-	local_gb_used = 0
+	#vcpus = 0
+	#memory_mb = 0
+	#local_gb = 0
+	#vcpus_used = 0
+	#memory_mb_used = 0
+	#local_gb_used = 0
 
 	#fake consumption
-	kxvcpu = 0
+	#kxvcpu = 0
+
+	def __init__(self, id=0, vcpus=0, memory_mb=0, local_gb=0, kxvcpu=0):
+		super(Host, self).__init__()
+		self.id = id
+		self.vcpus = vcpus
+		self.memory_mb = memory_mb
+		self.local_gb = local_gb
+		self.kxvcpu = kxvcpu
+
+		self.vms = Set()
+		self.vcpus_used = 0
+		self.memory_mb_used = 0
+		self.local_gb_used = 0
 
 	#Number of VMs running on the host
-	vms = Set()
 	@property
 	def running_vms(self):
 			return len(self.vms)
@@ -118,7 +133,7 @@ class Host(BaseCachedObject):
 		self.vcpus_used += flavor[METRICS.VCPU]
 		self.memory_mb_used += flavor[METRICS.RAM]
 		self.local_gb_used += flavor[METRICS.DISK]
-		self.save()
+		return self
 
 	def stats_down(self, flavor):
 		assert self.vcpus_used - flavor[METRICS.VCPU] >= 0
@@ -128,7 +143,7 @@ class Host(BaseCachedObject):
 		self.vcpus_used -= flavor[METRICS.VCPU]
 		self.memory_mb_used -= flavor[METRICS.RAM]
 		self.local_gb_used -= flavor[METRICS.DISK]
-		self.save()
+		return self
 
 	@staticmethod
 	def get_all():
@@ -136,9 +151,16 @@ class Host(BaseCachedObject):
 		return [_get(key) for key in h_keys]
 
 class VM(BaseCachedObject):
-	id = 0
-	flavor = FLAVORS.TINY
-	_host_id = None
+	#flavor = FLAVORS.TINY
+	#_host_id = None
+
+	def __init__(self, id=0, flavor=FLAVORS.TINY, host=None):
+		super(VM, self).__init__()
+		self.id = id
+		self.flavor = flavor
+		self.host = host
+		if host:
+			self._host_id = host.id
 
 	@property
 	def host(self):
@@ -158,19 +180,32 @@ class VM(BaseCachedObject):
 
 	def post_save(self, created=False):
 		if created:
-			self.host.stats_up(self.flavor)
+			self.host.stats_up(self.flavor).save()
 
 	def move(self, new_flavor, new_host):
-		self.host.stats_down(self.flavor)
-		new_host.stats_up(new_flavor)
+		old_host = self.host
+
+		if old_host.id == new_host.id:
+			#this is a local migration!
+			old_host.stats_down(self.flavor).stats_up(new_flavor).save()
+		else:
+			#live migrate:
+			#remove from current host
+			old_host.vms.remove(self.key)
+			old_host.stats_down(self.flavor).save()
+			#add to new host
+			new_host.vms.add(self.key)
+			new_host.stats_up(new_flavor).save()
+
+		#update self
 		self.flavor = new_flavor
-		self.host = new_host
+		self._host_id = new_host.id
 		self.save()
 
 	def terminate(self):
-		self_host = self.host
-		self_host.stats_down(self.flavor)
-		self_host.vms.remove(self.key) 
+		h = self.host
+		h.vms.remove(self.key)
+		h.stats_down(self.flavor).save()
 		self.delete()
 
 def log_stats():
@@ -208,11 +243,9 @@ def init_db():
 			)
 			h.save(created=True)
 			i += 1
+			logger.info(h.hostname + ' pm created')
 		except Exception as e:
 			logger.error(e)
-
-	for h in Host.get_all():
-		print h
 
 #TODO very unefficient
 def _add_host(key):
