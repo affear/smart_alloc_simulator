@@ -1,5 +1,6 @@
 from sim.concrete import db
 from sim.nova.scheduler import filters
+from sim.nova.scheduler import weights
 from oslo.config import cfg
 
 
@@ -57,6 +58,9 @@ class FilterScheduler(object):
 		all_hosts = db.Host.get_all()
 		selected_filters = self._select_filters(filters)
 
+		#Filtering
 		selected_destinations = self._schedule(all_hosts, selected_filters, flavor)
+		#Weighing
+		weighted_destinations = weights.get_weighed_hosts(selected_destinations)
 
-		return selected_destinations
+		return weighted_destinations

@@ -54,7 +54,7 @@ def _order_hosts(hosts, selected_weighers):
 		h.append(WeightedHost(h, weight))
 
 	ordered_weighted_hosts = sorted(weighted_hosts, key = lambda host: host.weight)
-	
+
 	for h in ordered_hosts:
 		ordered_hosts.append(h.host)
 
@@ -62,7 +62,7 @@ def _order_hosts(hosts, selected_weighers):
 
 
 
-def get_weighed_hosts(hosts, weighers):
+def get_weighed_hosts(hosts, weighers=None):
 	if not weighers:
 		selected_weighers = _parse_options(CONF.weighers)
 	else:
