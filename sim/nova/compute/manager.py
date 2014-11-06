@@ -64,14 +64,14 @@ class ComputeManager(object):
 			self._log_info('boot', 'No destination found')
 			return
 
-		dest = db.Host.select().where(db.Host.id == dest_id).get()
+		dest = db.Host.get(dest_id)
 		# 2 ...
 		# 3
 		notifier.info({}, 'compute.instance.create.start', {'flavor': flavor})
 		# 4 ...
 		# 5
-		vm = db.VM.create(id=id, flavor=flavor, host=dest)
-		dest.stats_up(flavor)
+		vm = db.VM(id=id, flavor=flavor, host=dest)
+		vm.save(created=True)
 		# 6
 		# SPAWNING... we cannot spawn real VMs
 		# 7
@@ -90,7 +90,7 @@ class ComputeManager(object):
 		notifier = rpc.get_notifier(self.hostname)
 		# 1 ... we do not have image stored
 		# 2
-		vm = db.VM.select().where(db.VM.id == id).get()
+		vm = db.VM.get(id)
 		notifier.info({}, 'compute.instance.delete.start', {'vm': vm})
 		# 3 & 4
 		vm.terminate()
@@ -129,7 +129,7 @@ class ComputeManager(object):
 
 		notifier = rpc.get_notifier(self.hostname)
 		# 1 & 2 ... we do not have quotas (and also users)
-		vm = db.VM.select().where(db.VM.id == id).get()
+		vm = db.VM.get(id)
 		notifier.info({}, 'compute.instance.resize.start', {'vm': vm})
 		# stats down to perform a right calculus for the host
 		vm.host.stats_down(vm.flavor)
@@ -140,7 +140,7 @@ class ComputeManager(object):
 		if not dest_id:
 			self._log_info('resize', 'No destination found')
 			return
-		dest = db.Host.select().where(db.Host.id == dest_id).get()
+		dest = db.Host.get(dest_id)
 		# ok, now we can move
 		vm.move(new_flavor=flavor, new_host=dest)
 		# notify end

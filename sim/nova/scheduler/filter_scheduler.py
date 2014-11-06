@@ -54,7 +54,7 @@ class FilterScheduler(object):
 	def select_destinations(self, flavor, filters=None):
 		""""Returns a list of destinations ordered from the best suitable to the worst"""
 
-		all_hosts = db.Host().select()
+		all_hosts = db.Host.get_all()
 		selected_filters = self._select_filters(filters)
 
 		selected_destinations = self._schedule(all_hosts, selected_filters, flavor)
