@@ -7,7 +7,7 @@ import logging, memcache, pickle
 CONF = cfg.CONF
 CONF.import_group('concrete', 'sim.concrete')
 
-_CACHE = memcache.Client(['127.0.0.1:11211'], debug=0)
+_CACHE = memcache.Client([CONF.concrete.db_url], debug=0)
 
 # logging
 setup_logger('db', CONF.logs.db_log_file)

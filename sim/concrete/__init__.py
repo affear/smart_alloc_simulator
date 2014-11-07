@@ -48,9 +48,9 @@ concrete_opts = [
 		help='The phisycal machines used during the simulation'
 	),
 	cfg.StrOpt(
-		'db_file',
-		default='db.db',
-		help='The file for the sqlite db'
+		'db_url',
+		default='127.0.0.1:11211',
+		help='The connection url to memcached'
 	)
 ]
 CONF = cfg.CONF
