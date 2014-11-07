@@ -28,11 +28,6 @@ log_opts = [
 		default='logs/db.log',
 		help='Database log file'
 	),
-	cfg.StrOpt(
-		'out_chart_log_file',
-		default='view/public/out_chart.log',
-		help='Chart Data log file'
-	),
 ]
 CONF = cfg.CONF
 CONF.register_group(log_group)

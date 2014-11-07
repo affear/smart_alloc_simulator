@@ -10,9 +10,19 @@ sim_opts = [
 		help='The number of steps of the simulation'
 	),
 	cfg.StrOpt(
-		name='history_file',
-		default='sim_history.json',
+		name='ops_file',
+		default='sim.f.ops.json',
 		help='The output file of this script'
+	),
+	cfg.StrOpt(
+		name='out_file',
+		default='sim.f.out.json',
+		help='The output file of the simulation'
+	),
+	cfg.StrOpt(
+		name='out_min_file',
+		default='sim.f.out.min.json',
+		help='The minified output file of of the simulation'
 	),
 ]
 CONF = cfg.CONF
@@ -138,7 +148,7 @@ if __name__ == '__main__':
 	CONF(default_config_files=['sim.conf', ])
 	NUM_T = CONF.sim.no_t
 	
-	cmds_history = []
+	cmds_history = {}
 
 	status = {
 		'id': 0,
@@ -150,10 +160,10 @@ if __name__ == '__main__':
 			cmd = random.choice(CMDS.values())().execute_virtual(status)
 		else: #there are no virtual machines... let's spawn one!
 			cmd = CMDS['boot']().execute_virtual(status)
-		cmds_history.append(cmd)
+		cmds_history[t] = cmd
 
 	import json
-	with open(CONF.sim.history_file, 'w') as out:
+	with open(CONF.sim.ops_file, 'w') as out:
 		json.dump(cmds_history, out)
 
-	print ' '.join(['File', CONF.sim.history_file, 'succesfully generated!'])
+	print ' '.join(['File', CONF.sim.ops_file, 'succesfully generated!'])
