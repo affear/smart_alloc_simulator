@@ -13,6 +13,9 @@ CONF.import_opt('scheduler_topic', 'sim.nova.scheduler.rpcapi')
 
 log_utils.setup_logger('scheduler', CONF.logs.scheduler_log_file)
 
+class NoDestinationFoundException(Exception):
+	pass
+
 class SchedulerManager(object):
 	logger = logging.getLogger('scheduler')
 
@@ -26,8 +29,13 @@ class SchedulerManager(object):
 
 	def select_destinations(self, ctx, flavor):
 		hosts = FilterScheduler().select_destinations(flavor)
+
+		if not hosts:
+			msg = ' '.join(['No destination found for', flavor['name'], 'vm'])
+			raise NoDestinationFoundException(msg)
+
 		# return ID to avoid circular dependency in serialization
-		host = hosts[0].id if hosts else None # our "weighting" to choose the first one (for now)
+		host = hosts[0].id
 		self._log_info('selected host', host)
 		return host
 
