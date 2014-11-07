@@ -2,6 +2,7 @@ from oslo import messaging
 from oslo.config import cfg
 from sim.nova import rpc
 from sim.nova.scheduler import rpcapi as scheduler_rpcapi
+from sim.nova.scheduler.manager import NoDestinationFoundException
 from sim.concrete import db
 from sim.utils import log_utils
 import logging
@@ -15,24 +16,6 @@ CONF.import_opt('host', 'sim.nova.compute')
 CONF.import_opt('compute_topic', 'sim.nova.compute.rpcapi')
 
 log_utils.setup_logger('compute', CONF.logs.compute_log_file)
-log_utils.setup_logger(
-	'out_chart',
-	CONF.logs.out_chart_log_file,
-	formatting='%(message)s'
-)
-out_logger = logging.getLogger('out_chart')
-
-def _log_out_chart(snapshot):
-	kxvcpu = snapshot[0]
-	no_pms = snapshot[1]
-	out_logger.info('-'.join([str(kxvcpu), str(no_pms)]) + ',')
-
-def log_snapshot(fn):
-	@wraps(fn)
-	def _wrapper(*args, **kwargs):
-		fn(*args, **kwargs)
-		_log_out_chart(db.get_snapshot())
-	return _wrapper
 
 class ComputeManager(object):
 	logger = logging.getLogger('compute')
@@ -46,7 +29,6 @@ class ComputeManager(object):
 		args = map(lambda a: str(a), args)
 		method(' '.join(args))
 
-	@log_snapshot
 	def build_instance(self, ctx, id, flavor):
 		# 1. select destinations from scheduler --> https://github.com/openstack/nova/blob/master/nova/conductor/manager.py#L613
 		# 2. spawn green thread to do the job --> https://github.com/openstack/nova/blob/master/nova/compute/manager.py#L1980
@@ -58,10 +40,14 @@ class ComputeManager(object):
 		
 		notifier = rpc.get_notifier(self.hostname)
 		# 1
-		dest_id = self.scheduler_client.select_destinations(flavor)
-		if not dest_id:
-			self._log(self.logger.warning, 'boot', 'No destination found for', id, flavor)
-			return
+		try:
+			dest_id = self.scheduler_client.select_destinations(flavor)
+		except messaging.RemoteError as r:
+			if r.exc_type == NoDestinationFoundException.__name__:
+				self._log(self.logger.warning, 'boot', r.value)
+				raise NoDestinationFoundException(r.value)
+			else:
+				raise r
 
 		dest = db.Host.get(dest_id)
 		# 2 ...
@@ -78,7 +64,6 @@ class ComputeManager(object):
 
 		self._log(self.logger.info, 'boot', vm)
 
-	@log_snapshot
 	def delete(self, ctx, id):
 		# 1. delete image --> https://github.com/openstack/nova/blob/master/nova/compute/api.py#L1544
 		# 2. notify delete start --> https://github.com/openstack/nova/blob/master/nova/compute/manager.py#L2446
@@ -93,7 +78,8 @@ class ComputeManager(object):
 			vm = db.VM.get(id)
 		except db.VMNotFoundException as e:
 			self.logger.error(e.message)
-			return
+			raise e
+
 		notifier.info({}, 'compute.instance.delete.start', {'vm': vm})
 		# 3 & 4
 		vm.terminate()
@@ -102,7 +88,6 @@ class ComputeManager(object):
 
 		self._log(self.logger.info, 'delete', id)
 
-	@log_snapshot
 	def resize(self, ctx, id, flavor):
 		# A bit less precise desciption than other methods...
 		# Sorry, but it is a heavy job
@@ -136,16 +121,22 @@ class ComputeManager(object):
 			vm = db.VM.get(id)
 		except db.VMNotFoundException as e:
 			self.logger.error(e.message)
-			return
+			raise e
 
 		notifier.info({}, 'compute.instance.resize.start', {'vm': vm})
 		# stats down to perform a right calculus for the host
 		vm.host.stats_down(vm.flavor).save()
-		dest_id = self.scheduler_client.select_destinations(flavor)
-		vm.host.stats_up(vm.flavor).save()
-		if not dest_id:
-			self._log(self.logger.warning, 'boot', 'No destination found for', id, flavor)
-			return
+		try:
+			dest_id = self.scheduler_client.select_destinations(flavor)
+		except messaging.RemoteError as r:
+			if r.exc_type == NoDestinationFoundException.__name__:
+				self._log(self.logger.warning, 'resize', r.value)
+				raise NoDestinationFoundException(r.value)
+			else:
+				raise r
+		finally:
+			vm.host.stats_up(vm.flavor).save()
+
 		dest = db.Host.get(dest_id)
 		# ok, now we can move
 		vm.move(new_flavor=flavor, new_host=dest)
