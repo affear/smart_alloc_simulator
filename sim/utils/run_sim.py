@@ -13,6 +13,10 @@ if __name__ == '__main__':
 	config.init_conf()
 	CONF = cfg.CONF
 
+	# logging
+	log_utils.setup_logger('sim', CONF.logs.sim_log_file)
+	logger = logging.getLogger('sim')
+
 	cmds_list = {}
 	# getting commands from file and
 	# generating a command list of concrete commands
@@ -48,10 +52,9 @@ if __name__ == '__main__':
 		}
 
 		keys = sorted([int(k) for k in cmds_list.keys()])
-		print keys
 		for k in keys:
 			t = str(k)
-			print 't' + t
+			logger.info('t' + t)
 			try:
 				cmds_list[t].execute()
 
@@ -88,10 +91,6 @@ if __name__ == '__main__':
 		total['snapshots'] = snapshots
 
 		return total
-
-
-	log_utils.setup_logger('sim', CONF.logs.sim_log_file)
-	logger = logging.getLogger('sim')
 
 	# start the simulation
 	logger.info('Simulation started')
