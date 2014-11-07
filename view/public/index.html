@@ -1,86 +1,130 @@
+<!DOCTYPE html>
+
 <html>
-	<head>
-		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-		<script type="text/javascript" src="vendor/jquery/dist/jquery.min.js"></script>
-		<script type="text/javascript">
-			google.load("visualization", "1", {packages:["corechart"]});
-			google.setOnLoadCallback(drawChart);
-			function drawChart() {
-				var data = new google.visualization.DataTable();
 
-				data.addColumn('string', 't');
-				data.addColumn('number', 'k_tot');
-				data.addColumn('number', 'no_pms');
-				data.addColumn({type: 'string', role: 'annotation'});
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-				//load file and parse it
-				$.get('out_chart.log',
-					function(content){
-						//format:
-						//k1-n1,k2-n2,k3-n3,...
-						$.each(content.split(','),
-							function(index, value){
-								if(!value){
-									//the string could be empty
-									return;
-								}
+<head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="vendor/jquery/dist/jquery.min.js"></script>
+    <script src="../vendor/platform/platform.js"></script>
 
-								var row;
-								// value.contains('-') is True
-								if(value.indexOf('-') > -1){
-									console.log('ok');
-									bits = value.split('-');
-									kxvcpu = parseInt(bits[0]);
-									no_pms = parseInt(bits[1]);
-									row = ['t' + index, kxvcpu, no_pms, null];
-								}else{
-									console.log('X')
-									row = ['t' + index, 0, 0, 'X'];
-								}
-								data.addRow(row);
-							}
-						);
+    <link rel="import" href="../components/font-roboto/roboto.html">
+    <link rel="import" href="../vendor/core-header-panel/core-header-panel.html">
+    <link rel="import" href="../vendor/core-toolbar/core-toolbar.html">
+    <link rel="import" href="../vendor/paper-tabs/paper-tabs.html">
 
-						console.log(data);
+    <link rel="stylesheet" type="text/css" href="main.css" media="screen" />
 
-						var TOT_K_COL = '#F44336';
-						var NO_PMS_COL = '#3F51B5';
 
-						var options = {
-							title: 'Simulation History',
-							curveType: 'function',
-							series: {
-								0: {targetAxisIndex: 0},
-								1: {targetAxisIndex: 1}
-							},
-							hAxis: {showTextEvery: 10},
-							vAxes:{
-								0: {
-									title:'Total Consumption',
-								},
-								1: {
-									title:'Number of PMs',
-								}
-							},
-							colors: [TOT_K_COL, NO_PMS_COL, 'black']
-						};
+    <script type="text/javascript">
+    google.load("visualization", "1", {
+        packages: ["corechart"]
+    });
+    google.setOnLoadCallback(drawChart);
 
-						var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    function drawChart() {
+        var data = new google.visualization.DataTable();
 
-						chart.draw(data, options);
-					}
-				);
-			}
-		</script>
-	</head>
-	<body>
-		<div id="chart_div" style="height: 80vh;"></div>
+        data.addColumn('string', 't');
+        data.addColumn('number', 'k_tot');
+        data.addColumn('number', 'no_pms');
+        data.addColumn({
+            type: 'string',
+            role: 'annotation'
+        });
 
-		<ul>
-			<li><a href="logs/compute.log">compute.log</a></li>
-			<li><a href="logs/scheduler.log">scheduler.log</a></li>
-			<li><a href="logs/consolidator.log">consolidator.log</a></li>
-			<li><a href="logs/db.log">db.log</a></li>
-		</ul>
-	</body>
+        //load file and parse it
+        $.get('out_chart.log',
+            function(content) {
+                //format:
+                //k1-n1,k2-n2,k3-n3,...
+                $.each(content.split(','),
+                    function(index, value) {
+                        if (!value) {
+                            //the string could be empty
+                            return;
+                        }
+
+                        var row;
+                        // value.contains('-') is True
+                        if (value.indexOf('-') > -1) {
+                            console.log('ok');
+                            bits = value.split('-');
+                            kxvcpu = parseInt(bits[0]);
+                            no_pms = parseInt(bits[1]);
+                            row = ['t' + index, kxvcpu, no_pms, null];
+                        } else {
+                            console.log('X')
+                            row = ['t' + index, 0, 0, 'X'];
+                        }
+                        data.addRow(row);
+                    }
+                );
+
+                console.log(data);
+
+                var TOT_K_COL = '#F44336';
+                var NO_PMS_COL = '#3F51B5';
+
+                var options = {
+                    title: 'Simulation History',
+                    curveType: 'function',
+                    series: {
+                        0: {
+                            targetAxisIndex: 0
+                        },
+                        1: {
+                            targetAxisIndex: 1
+                        }
+                    },
+                    hAxis: {
+                        showTextEvery: 10
+                    },
+                    vAxes: {
+                        0: {
+                            title: 'Total Consumption',
+                        },
+                        1: {
+                            title: 'Number of PMs',
+                        }
+                    },
+                    colors: [TOT_K_COL, NO_PMS_COL, 'black']
+                };
+
+                var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+                chart.draw(data, options);
+            }
+        );
+    }
+    </script>
+</head>
+
+<body unresolved>
+
+    <core-header-panel>
+
+        <core-toolbar>
+
+        </core-toolbar>
+
+        <div id="chart_div" style="height: 80vh;"></div>
+
+        <ul>
+            <li><a href="logs/compute.log">compute.log</a>
+            </li>
+            <li><a href="logs/scheduler.log">scheduler.log</a>
+            </li>
+            <li><a href="logs/consolidator.log">consolidator.log</a>
+            </li>
+            <li><a href="logs/db.log">db.log</a>
+            </li>
+        </ul>
+
+    </core-header-panel>
+
+
+</body>
+
 </html>
