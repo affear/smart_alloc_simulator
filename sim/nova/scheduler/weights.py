@@ -36,11 +36,14 @@ def _parse_options(opts):
 def _weight_host(host, selected_weighers):
 	value = 0.0
 
-	for(name, ratio) in selected_weighers_list:
+	for(metric_used, ratio) in selected_weighers:
 		try:
-			value += getattr(host, name) * ratio
-		except AttributeError:
-			logger.error('Metric ' + name + ' not found')
+   			metric = metric_used[:-5]
+   			metric_free_val = getattr(host, metric) - getattr(host, metric_used)
+
+			value += metric_free_val * float(ratio)
+		except AttributeError as e:
+			logger.error('Metric ' + metric + ' not found')
 
 	return value
 
@@ -49,15 +52,15 @@ def _order_hosts(hosts, selected_weighers):
 	ordered_weighted_hosts = []
 	ordered_hosts = []
 
-	for h in host:
+	for h in hosts:
 		weight = _weight_host(h, selected_weighers)
-		h.append(WeightedHost(h, weight))
+		weighted_hosts.append(WeightedHost(h, weight))
 
-	ordered_weighted_hosts = sorted(weighted_hosts, key = lambda host: host.weight)
+	ordered_weighted_hosts = sorted(weighted_hosts, key = lambda host: host.weight, reverse=True)
 
-	for h in ordered_hosts:
+	for h in ordered_weighted_hosts:
 		ordered_hosts.append(h.host)
-
+		
 	return ordered_hosts
 
 
