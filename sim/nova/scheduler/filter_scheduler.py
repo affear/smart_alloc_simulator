@@ -61,7 +61,5 @@ class FilterScheduler(object):
 		#Filtering
 		selected_destinations = self._schedule(all_hosts, selected_filters, flavor)
 		#Weighing
-		#weighted_destinations = weights.get_weighed_hosts(selected_destinations)
-
-		#return weighted_destinations
-		return selected_destinations
+		weighted_destinations = weights.get_weighed_hosts(selected_destinations)
+		return weighted_destinations
