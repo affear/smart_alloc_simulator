@@ -5,43 +5,141 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
 <head>
+    <script src="vendor/platform/platform.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="vendor/jquery/dist/jquery.min.js"></script>
-    <script src="../vendor/platform/platform.js"></script>
+    <script type="text/javascript" src="script.js"></script>
 
-    <link rel="import" href="../components/font-roboto/roboto.html">
-    <link rel="import" href="../vendor/core-header-panel/core-header-panel.html">
-    <link rel="import" href="../vendor/core-toolbar/core-toolbar.html">
-    <link rel="import" href="../vendor/paper-tabs/paper-tabs.html">
+    <link rel="import" href="vendor/font-roboto/roboto.html">
+    <link rel="import" href="vendor/core-scaffold/core-scaffold.html">
+    <link rel="import" href="vendor/core-menu/core-menu.html" />
+    <link rel="import" href="vendor/paper-item/paper-item.html">
+    <link rel="import" href="vendor/core-animated-pages/core-animated-pages.html">
+    <link rel="import" href="vendor/core-animated-pages/transitions/slide-from-right.html">
 
     <link rel="stylesheet" type="text/css" href="main.css" media="screen" />
 
     <script type="text/javascript" src="chart.js"></script>
+
+
+    <script type="text/javascript">
+    // google.load("visualization", "1", {
+    //     packages: ["corechart"]
+    // });
+    // google.setOnLoadCallback(drawChart);
+
+    // function drawChart() {
+    //     var data = new google.visualization.DataTable();
+
+    //     data.addColumn('string', 't');
+    //     data.addColumn('number', 'k_tot');
+    //     data.addColumn('number', 'no_pms');
+    //     data.addColumn({
+    //         type: 'string',
+    //         role: 'annotation'
+    //     });
+
+    //     //load file and parse it
+    //     $.get('out_chart.log',
+    //         function(content) {
+    //             //format:
+    //             //k1-n1,k2-n2,k3-n3,...
+    //             $.each(content.split(','),
+    //                 function(index, value) {
+    //                     if (!value) {
+    //                         //the string could be empty
+    //                         return;
+    //                     }
+
+    //                     var row;
+    //                     // value.contains('-') is True
+    //                     if (value.indexOf('-') > -1) {
+    //                         console.log('ok');
+    //                         bits = value.split('-');
+    //                         kxvcpu = parseInt(bits[0]);
+    //                         no_pms = parseInt(bits[1]);
+    //                         row = ['t' + index, kxvcpu, no_pms, null];
+    //                     } else {
+    //                         console.log('X')
+    //                         row = ['t' + index, 0, 0, 'X'];
+    //                     }
+    //                     data.addRow(row);
+    //                 }
+    //             );
+
+    //             console.log(data);
+
+    //             var TOT_K_COL = '#F44336';
+    //             var NO_PMS_COL = '#3F51B5';
+
+    //             var options = {
+    //                 title: 'Simulation History',
+    //                 curveType: 'function',
+    //                 series: {
+    //                     0: {
+    //                         targetAxisIndex: 0
+    //                     },
+    //                     1: {
+    //                         targetAxisIndex: 1
+    //                     }
+    //                 },
+    //                 hAxis: {
+    //                     showTextEvery: 10
+    //                 },
+    //                 vAxes: {
+    //                     0: {
+    //                         title: 'Total Consumption',
+    //                     },
+    //                     1: {
+    //                         title: 'Number of PMs',
+    //                     }
+    //                 },
+    //                 colors: [TOT_K_COL, NO_PMS_COL, 'black']
+    //             };
+    //             var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    //             chart.draw(data, options);
+    //         });
+    // }
+    </script>
 </head>
 
 <body unresolved>
+    <template is="auto-binding" id="t">
+        <flatiron-director route="{{route}}" autoHash></flatiron-director>
 
-    <core-header-panel>
+        <core-scaffold>
+            <nav>
+                <core-toolbar id="menu-tool">
+                    Smart Alloc Simulator
+                </core-toolbar>
+                <core-menu selected="{{route}}" valueattr="hash" on-core-select="{{menuItemSelected}}">
+                    <template repeat="{{page in pages}}">
+                        <paper-item icon="{{page.icon}}" label="{{page.title}}" hash="{{page.hash}}">
+                            <a href="#{{page.hash}}"></a>
+                        </paper-item>
+                    </template>
+                </core-menu>
+            </nav>
 
-        <core-toolbar>
+            <core-toolbar tool flex id="content-tool">
+                <div flex>{{pageTitle}}</div>
+            </core-toolbar>
 
-        </core-toolbar>
+            <div class="content" layout horizontal center-center fit>
+                <core-animated-pages selected="{{route}}" transitions="slide-from-right" valueattr="hash">
+                    <template repeat="{{page in pages}}">
+                        <section hash="{{page.hash}}" layout vertical center-center>
+                            <div>{{page.title}}</div>
+                        </section>
+                </core-animated-pages>
+                </template>
+                <!-- <div id="chart_div" style="height: 80vh;"></div> -->
+            </div>
 
-        <div id="chart_div" style="height: 80vh;"></div>
 
-        <ul>
-            <li><a href="logs/compute.log">compute.log</a>
-            </li>
-            <li><a href="logs/scheduler.log">scheduler.log</a>
-            </li>
-            <li><a href="logs/consolidator.log">consolidator.log</a>
-            </li>
-            <li><a href="logs/db.log">db.log</a>
-            </li>
-        </ul>
 
-    </core-header-panel>
-
+        </core-scaffold>
+    </template>
 
 </body>
 
