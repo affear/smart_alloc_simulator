@@ -1,8 +1,9 @@
 from oslo import messaging
 from oslo.config import cfg
 from sim.utils import log_utils
-import logging, inspect
+import logging, inspect, pkgutil
 from sim.nova.consolidator import events
+from sim.nova.consolidator.events.base import BaseEndpoint
 
 log_utils.setup_logger('consolidator', cfg.CONF.logs.consolidator_log_file)
 logger = logging.getLogger('consolidator')
@@ -54,22 +55,25 @@ class EntryEndpoint(object):
 		def _filter_endpoint_fn(cls):
 			'''
 				Returns a member if it is a class
-				and it inherits from events.BaseEndpoint
+				and it inherits from BaseEndpoint
 			'''
-			if not inspect.isclass(cls) or cls == events.BaseEndpoint:
+			if not inspect.isclass(cls) or cls == BaseEndpoint:
 				return False
 			base_classes = inspect.getmro(cls)
-			return events.BaseEndpoint in base_classes
+			return BaseEndpoint in base_classes
 
-		for cls_name, cls in inspect.getmembers(events, _filter_endpoint_fn):
-			if not getattr(cls, 'event_type', None):
-				continue
-			for method_name, handler in inspect.getmembers(cls, _filter_level_fn):
-				# remove 'on_'
-				lvl_name = method_name[3:]
-				if not lvl_name in self._endpoints.keys():
+		for importer, mod_name, ispkg in pkgutil.iter_modules(events.__path__):
+			# all submodules
+			submodule = importer.find_module(mod_name).load_module(mod_name)
+			for cls_name, cls in inspect.getmembers(submodule, _filter_endpoint_fn):
+				if not getattr(cls, 'event_type', None):
 					continue
-				self._endpoints[lvl_name][cls.event_type] = getattr(cls(), method_name)
+				for method_name, handler in inspect.getmembers(cls, _filter_level_fn):
+					# remove 'on_'
+					lvl_name = method_name[3:]
+					if not lvl_name in self._endpoints.keys():
+						continue
+					self._endpoints[lvl_name][cls.event_type] = getattr(cls(), method_name)
 
 		# OK, finished
 

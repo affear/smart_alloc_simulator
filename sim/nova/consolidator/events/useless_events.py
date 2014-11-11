@@ -1,7 +1,7 @@
 '''
 	TODO delete this file
 '''
-from sim.nova.consolidator.events import BaseEndpoint
+from sim.nova.consolidator.events.base import BaseEndpoint
 import logging
 
 logger = logging.getLogger('consolidator')
