@@ -1,2 +1,2 @@
 #!/bin/sh
-python sim/smart/consolidator/notification.py
+python sim/nova/consolidator/notification.py
