@@ -71,7 +71,7 @@ class EntryEndpoint(object):
 				for method_name, handler in inspect.getmembers(cls, _filter_level_fn):
 					# remove 'on_'
 					lvl_name = method_name[3:]
-					if not lvl_name in self._endpoints.keys():
+					if not lvl_name in allowed_priorities:
 						continue
 					self._endpoints[lvl_name][cls.event_type] = getattr(cls(), method_name)
 
