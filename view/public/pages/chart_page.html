@@ -1,9 +1,24 @@
-<link rel="import" href="../vendor/google-chart/google-chart.html">
+<link rel="import" href="elements/stat-card.html">
 
 <google-chart type="line">
 </google-chart>
+
+<template is="auto-binding" id="stats-list">
+    <stat-card label="Steps Count" value="{{data.t_real}}"></stat-card>
+    <stat-card label="Average Consumption" value="{{data.avg_k}}"></stat-card>
+    <stat-card label="Average VMs" value="{{data.avg_pms}}"></stat-card>
+    <stat-card label="Miss Count" value="{{data.no_X}}"></stat-card>
+    <stat-card label="Boot Count" value="{{data.no_boot}}"></stat-card>
+    <stat-card label="Resize Count" value="{{data.no_resize}}"></stat-card>
+    <stat-card label="Delete Count" value="{{data.no_delete}}"></stat-card>
+</template>
+
 <script>
 var chart = document.querySelector('google-chart');
+var statsList = document.querySelector('#stats-list');
+var truncateDecimal = function (num) {
+    return Math.round(num * 100) / 100
+};
 var drawGraph = function() {
     rows = [];
 
@@ -12,18 +27,21 @@ var drawGraph = function() {
         dataType: 'json',
         async: false,
         success: function(data) {
-            console.log(data.t_real);
-            console.log(data.avg_k);
-            console.log(data.avg_pms);
-            console.log(data.no_X);
-            console.log(data.no_boot);
-            console.log(data.no_resize);
-            console.log(data.no_delete);
-            console.log(data.snapshots);
+            // console.log(data.t_real);
+            // console.log(data.avg_k);
+            // console.log(data.avg_pms);
+            // console.log(data.no_X);
+            // console.log(data.no_boot);
+            // console.log(data.no_resize);
+            // console.log(data.no_delete);
+            // console.log(data.snapshots);
+            data.avg_k = truncateDecimal(data.avg_k);
+            data.avg_pms = truncateDecimal(data.avg_pms);
+            statsList.data = data;
             prev = [0, 0];
             $.each(data.snapshots,
                 function(key, value) {
-                    console.log(key + ' ' + value);
+                    // console.log(key + ' ' + value);
                     var row;
                     if (value instanceof Array) {
                         row = ['t' + key, value[0], value[1], null];
