@@ -19,18 +19,6 @@ class FilterScheduler(object):
 		return selected_filters
 
 	def _schedule(self, all_hosts, selected_filters, flavor):
-
-		def _class_import(class_path):
-			"""Returns the class given its path as a string"""
-			mod_path = '.'.join(class_path.split('.')[0:-1])
-			class_name = class_path.split('.')[-1]
-			mod = __import__(mod_path)
-			components = mod_path.split('.')
-			for comp in components[1:]:
-				mod = getattr(mod, comp)
-			clazz = getattr(mod, class_name)
-			return clazz
-
 		def _filter(host, filters, flavor):			
 			for f in filters:
 				if not f.host_passes(host, flavor):
@@ -40,8 +28,9 @@ class FilterScheduler(object):
 		selected_hosts = []
 		filters = []
 
+		from sim import utils
 		for sf in selected_filters:
-			filterClass = _class_import(sf)
+			filterClass = utils.class_for_name(sf)
 			filters.append(filterClass())
 
 		for h in all_hosts:
