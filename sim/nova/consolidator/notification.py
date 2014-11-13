@@ -102,4 +102,8 @@ if __name__ == '__main__':
 	endpoints = [EntryEndpoint()]
 
 	server = messaging.get_notification_listener(transport, targets, endpoints)
+	# the default executor is blocking!
+	# se every request is executed as in a queue!
+	# even in openstack they do this:
+	# https://github.com/openstack/ceilometer/blob/master/ceilometer/notification.py#L104
 	server.start()
