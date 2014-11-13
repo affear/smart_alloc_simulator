@@ -1,7 +1,6 @@
 class BaseEndpoint(object):
 	'''
-		To have a working endpoint, inherit from this class
-		and import all from your module in sim.nova.consolidator.events.__init__.py
+		To have a working endpoint, inherit from this class.
 		Set self.event_type to answer to a certain event.
 		Prefix with 'on_' a method name to make it answer
 		to a certain level. E.g.:
