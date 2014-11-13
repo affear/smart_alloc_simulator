@@ -71,3 +71,6 @@ node_modules
 
 #Idea PyCharm
 .idea
+
+# ignore oslo-incubator (cloned from git)
+oslo-incubator
