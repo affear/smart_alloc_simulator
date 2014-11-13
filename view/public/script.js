@@ -11,27 +11,30 @@
         var ajax;
 
         template.pages = [{
-            title: "Consumption Chart",
+            title: "Simulation Summary",
             hash: "chart",
             icon: "trending-up",
-            url: 'pages/chart_page.html'
+            url: 'pages/chart_page.html',
         }, {
             title: "Compute Log",
             hash: "compute_log",
             icon: "toc",
-            url: 'logs/compute.log'
+            url: 'pages/logs/compute.log',
         }, {
             title: "Scheduler Log",
             hash: "scheduler_log",
-            icon: "toc"
+            icon: "toc",
+            url: 'pages/logs/scheduler.log',
         }, {
             title: "Consolidator Log",
             hash: "consolidator_log",
-            icon: "toc"
+            icon: "toc",
+            url: 'pages/logs/consolidator.log',
         }, {
             title: "Database Log",
             hash: "database_log",
-            icon: "toc"
+            icon: "toc",
+            url: 'pages/logs/db.log',
         }];
         template.pageTitle = template.pages[0];
         template.addEventListener('template-bound', function(e) {
@@ -46,6 +49,7 @@
                         ajax.go();
                     }
                     document.querySelector('core-scaffold').closeDrawer();
+                    document.title = template.selectedPage.page.title;
                 });
 
             }
