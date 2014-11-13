@@ -1,0 +1,90 @@
+<link rel="import" href="../vendor/google-chart/google-chart.html">
+
+<google-chart type="line">
+</google-chart>
+<script>
+var chart = document.querySelector('google-chart');
+var drawGraph = function() {
+    rows = [];
+
+    $.ajax({
+        url: 'parse.me.json',
+        dataType: 'json',
+        async: false,
+        success: function(data) {
+            console.log(data.t_real);
+            console.log(data.avg_k);
+            console.log(data.avg_pms);
+            console.log(data.no_X);
+            console.log(data.no_boot);
+            console.log(data.no_resize);
+            console.log(data.no_delete);
+            console.log(data.snapshots);
+            prev = [0, 0];
+            $.each(data.snapshots,
+                function(key, value) {
+                    console.log(key + ' ' + value);
+                    var row;
+                    if (value instanceof Array) {
+                        row = ['t' + key, value[0], value[1], null];
+                        prev = value
+                    } else {
+                        row = ['t' + key, prev[0], prev[1], 'X'];
+                    }
+                    rows.push(row);
+                }
+            );
+
+
+        }
+    });
+
+    var TOT_K_COL = '#D50000';
+    var NO_PMS_COL = '#CDDC39';
+
+    var options = {
+        curveType: 'function',
+        series: {
+            0: {
+                targetAxisIndex: 0
+            },
+            1: {
+                targetAxisIndex: 1
+            }
+        },
+        hAxis: {
+            showTextEvery: 10
+        },
+        vAxes: {
+            0: {
+                title: 'Total Consumption',
+            },
+            1: {
+                title: 'Number of PMs',
+            }
+        },
+        colors: [TOT_K_COL, NO_PMS_COL, 'black']
+    };
+    var cols = [{
+        label: "t",
+        type: "string"
+    }, {
+        label: "Total Consumption",
+        type: "number"
+    }, {
+        label: "Number of PMs",
+        type: "number"
+    }, {
+        role: "annotation",
+        type: "string"
+    }];
+    chart.setAttribute("options", JSON.stringify(options));
+    chart.setAttribute("cols", JSON.stringify(cols));
+    chart.setAttribute("rows", JSON.stringify(rows));
+
+}
+$(window).resize(function() {
+    chart.drawChart();
+});
+drawGraph();
+</script>
