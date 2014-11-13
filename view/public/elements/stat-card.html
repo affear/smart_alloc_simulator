@@ -1,0 +1,58 @@
+<link rel="import" href="../vendor/polymer/polymer.html">
+<link rel="import" href="../vendor/google-chart/google-chart.html">
+<link rel="import" href="../vendor/paper-shadow/paper-shadow.html">
+<link rel="import" href="../vendor/core-item/core-item.html">
+
+
+<polymer-element name="stat-card" attributes="label value">
+    <template>
+        <style>
+        :host {
+            display: inline-block;
+            overflow: hidden;
+        }
+        .card {
+            margin: 1em;
+            font-family: 'RobotoDraft', sans-serif;
+            font-weight: 300;
+            font-size: 15px;
+            min-width: 10em;
+        }
+        .item {
+            height: 7em;
+            min-width: 10em;
+            overflow: hidden;
+        }
+        .header {
+            padding-left: 0.5em;
+            padding-right: 0.5em;
+            background-color: #757575;
+            text-align: center;
+            color: white;
+            width: 100%;
+            font-size: 18px;
+        }
+        .content {
+            text-align: center;
+            font-weight: 500;
+        }
+        </style>
+        <paper-shadow z="1" class="card">
+            <core-item class="item" layout vertical>
+                <div class="header" one>
+                    <p>{{label}}</p>
+                </div>
+                <div class="content" one>
+                    <p>{{value}}</p>
+                </div>
+            </core-item>
+        </paper-shadow>
+    </template>
+    <script>
+    Polymer({
+        label: "label",
+        value: "value"
+
+    });
+    </script>
+</polymer-element>

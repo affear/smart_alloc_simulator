@@ -1,55 +1,55 @@
-html,body {
-  font-family: 'RobotoDraft', sans-serif;
-  font-weight: 300;
+html, body {
+    font-family: 'RobotoDraft', sans-serif;
+    font-weight: 300;
 }
-
+h1 {
+    line-height: 1.25;
+    margin: 0 0 10px;
+    font-size: 40px;
+    font-weight: bold;
+}
 core-animated-pages {
-  width: 100%;
-  height: 100%;
-  -webkit-user-select: none;
-}
-
-core-animated-pages #page-content{
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-}
-
-core-animated-pages > * {
-  border-radius: 5px;
-  font-size: 10px;
-  background-color: white;
-}
-
-/*With deep it affects also the descendant shadow (in this case in core-scaffold)*/
-body /deep/ core-toolbar{
-  background-color: #757575;
-  color: #fff;
-}
-
-
-body /deep/ core-toolbar#menu-tool{
-  background-color: #424242;
-  color: #fff;
-}
-
-core-menu {
-  color: #212121;
-  margin: 10px 0 0 0;
-}
-
-core-menu > paper-item.core-selected {
-  background: #FAFAFA;
-}
-
-@media all and (max-width: 660px) {
-  core-animated-pages {
     width: 100%;
     height: 100%;
-  }
+    -webkit-user-select: none;
 }
+core-animated-pages #page-content {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+core-animated-pages > * {
+    border-radius: 5px;
+    font-size: 10px;
+    background-color: white;
+}
+/*With deep it affects also the descendant shadow (in this case in core-scaffold)*/
 
+body /deep/ core-toolbar {
+    background-color: #757575;
+    color: #fff;
+}
+body /deep/ core-toolbar#menu-tool {
+    background-color: #424242;
+    color: #fff;
+}
+core-menu {
+    color: #212121;
+    margin: 10px 0 0 0;
+}
+core-menu > paper-item.core-selected {
+    background: #FAFAFA;
+}
+@media all and (max-width: 660px) {
+    core-animated-pages {
+        width: 100%;
+        height: 100%;
+    }
+}
+core-icon {
+    margin-right: 0.5em;
+}
 google-chart {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 80%;
 }
