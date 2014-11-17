@@ -28,4 +28,7 @@ class ComputeTaskAPI(object):
 
 	def resize(self, id, flavor):
 		return self.client.call({}, 'resize', id=id, flavor=flavor)
+	
+	def live_migrate(self, vm_id, flavor, host_id):
+		self.client.call({}, 'live_migrate', vm_id=vm_id, flavor=flavor, host_id=host_id)
 

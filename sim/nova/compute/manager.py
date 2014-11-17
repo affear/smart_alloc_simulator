@@ -88,6 +88,21 @@ class ComputeManager(object):
 
 		self._log(self.logger.info, 'delete', id)
 
+	def _do_live_migrate(self, vm, flavor, host):
+		notifier = rpc.get_notifier(self.hostname)
+
+		notification_payload = {
+			'vm': vm.id,
+			'flavor': flavor['name'],
+			'host': host.id 
+		}
+
+		notifier.info({}, 'compute.instance.live_migrate.start', notification_payload)
+		# move
+		vm.move(new_flavor=flavor, new_host=host)
+		# notify end
+		notifier.info({}, 'compute.instance.live_migrate.end', notification_payload)
+
 	def resize(self, ctx, id, flavor):
 		# A bit less precise desciption than other methods...
 		# Sorry, but it is a heavy job
@@ -137,13 +152,29 @@ class ComputeManager(object):
 		finally:
 			vm.host.stats_up(vm.flavor).save()
 
+		# live_migrate now
 		dest = db.Host.get(dest_id)
-		# ok, now we can move
-		vm.move(new_flavor=flavor, new_host=dest)
+		self._do_live_migrate(vm, flavor, dest)
 		# notify end
 		notifier.info({}, 'compute.instance.resize.end', {'vm': vm})
 
 		self._log(self.logger.info, 'resize', id, flavor['name'])
+
+		def live_migrate(self, ctxt, vm_id, flavor, host_id):
+			'''
+				This command it is not available (in our simulation) to the user.
+				It is only used internally by `resize` and by our consolidator.
+			'''
+			try:
+				vm = db.VM.get(vm_id)
+			except db.VMNotFoundException as e:
+				self.logger.error(e.message)
+				raise e
+
+			self._do_live_migrate(vm, flavor, db.Host.get(host_id))
+
+			self._log(self.logger.info, 'live_migrate', vm_id, flavor['name'], host_id)
+			
 
 if __name__ == '__main__':
 	server = rpc.get_server(CONF.compute_topic, [ComputeManager(), ])
