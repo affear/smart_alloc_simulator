@@ -258,10 +258,12 @@ ALL_HOSTS_KEY = 'all_hosts'
 try:
 	_HOSTS = _get(ALL_HOSTS_KEY)
 	if not _HOSTS: raise
-except:
+	for h in Host.get_all():
+		if h.vcpus_used > 0:
+			#this means that db is corrupted
+			raise
+except:	
+	_CACHE.flush_all()
 	_HOSTS = Set()
 	_set(ALL_HOSTS_KEY, _HOSTS)
-	init_db()
-
-if __name__ == '__main__':
 	init_db()
