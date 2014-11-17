@@ -12,11 +12,14 @@ core-animated-pages {
     width: 100%;
     height: 100%;
     -webkit-user-select: none;
+
 }
 core-animated-pages #page-content {
     width: 100%;
     height: 100%;
     overflow: auto;
+    background-color: #ECEFF1;
+
 }
 core-animated-pages > * {
     border-radius: 5px;
@@ -49,7 +52,20 @@ core-menu > paper-item.core-selected {
 core-icon {
     margin-right: 0.5em;
 }
-google-chart {
-    width: 100%;
+#chart {
     height: 80%;
+    margin: 1.5em;
+    background-color: white;
+}
+#chart google-chart{
+    width: 100%;
+    height: 100%;
+}
+
+.section-title{
+    font-size: 20px;
+    font-weight: 400;
+    color: gray;
+    text-transform: uppercase;
+    text-align: center;
 }
