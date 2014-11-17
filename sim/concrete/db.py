@@ -262,3 +262,6 @@ except:
 	_HOSTS = Set()
 	_set(ALL_HOSTS_KEY, _HOSTS)
 	init_db()
+
+if __name__ == '__main__':
+	init_db()
