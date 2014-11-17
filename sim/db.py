@@ -50,7 +50,7 @@ class SimData(BASE, models.TimestampMixin, models.ModelBase):
 		with s.begin():
 			sims = cls.filter_sim(s, smart)
 			if not sims:
-				return None
+				return 0
 			return sum([getattr(sim, param) for sim in sims]) / float(len(sims))
 
 	@classmethod
