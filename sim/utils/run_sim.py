@@ -2,7 +2,7 @@
 if __name__ == '__main__':
 	from sim.utils import log_utils
 	from sim.utils.sim_file_gen import CMDS
-	from sim.concrete.db import get_snapshot, VMNotFoundException
+	from sim.concrete.db import get_snapshot, VMNotFoundException, init_db
 	from sim.nova.scheduler.manager import NoDestinationFoundException
 	from sim.novaclient import commands
 	from sim import db
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 	# this function does the real job.
 	# It executes concrete commands and adds
 	# a snapshot at every time t
-	def do_sim():
+	def do_sim(smart=False):
 		# dict in which we will store the snapshots
 		# at every time t
 		snapshots = {}
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 			t = str(k)
 			logger.info('t' + t)
 			try:
-				cmds_list[t].execute()
+				cmds_list[t].execute(smart)
 
 				if type(cmds_list[t]) == commands.CreateCommand: no_boot += 1
 				if type(cmds_list[t]) == commands.ResizeCommand: no_resize += 1
@@ -97,6 +97,12 @@ if __name__ == '__main__':
 	logger.info('Simulation started')
 	data = do_sim()
 	logger.info('Simulation ended')
+	# reset db
+	init_db()
+	# start the SMART simulation
+	logger.info('Smart simulation started')
+	smart_data = do_sim(smart=True)
+	logger.info('Smart simulation ended')
 
 	# now that the simulation is complete,
 	# we can filter snapshot to generate:
@@ -110,35 +116,51 @@ if __name__ == '__main__':
 		simdata = db.SimData(
 			avg_consumption=data['avg_k'],
 			avg_no_pms=data['avg_pms'],
-			no_nodestfound=data['no_X'],
-			#smart = Column(Boolean, default=False)
+			no_nodestfound=data['no_X']
 		)
 		session.add(simdata)
 
-	# add total metrics to data
-	# smart
-	data['tot_avg_k_smart'] = db.SimData.get_avg_consumption(smart=True)
-	data['tot_avg_pms_smart'] = db.SimData.get_avg_no_pms(smart=True)
-	data['tot_avg_x_smart'] = db.SimData.get_avg_nodestfound(smart=True)
-	# not smart
-	data['tot_avg_k'] = db.SimData.get_avg_consumption()
-	data['tot_avg_pms'] = db.SimData.get_avg_no_pms()
-	data['tot_avg_x'] = db.SimData.get_avg_nodestfound()
+		smart_simdata = db.SimData(
+			avg_consumption=data['avg_k'],
+			avg_no_pms=data['avg_pms'],
+			no_nodestfound=data['no_X'],
+			smart=True
+		)
+		session.add(smart_simdata)
 
 	# dump to file (not minimized)
 	with open(CONF.sim.out_file, 'w') as out:
 		json.dump(data, out)
+	with open(CONF.sim.smart_out_file, 'w') as out:
+		json.dump(smart_data, out)
 	
 	#minimize
 	STEP = 10
-	minimized = {}
-	for t in data['snapshots']:
-		if t % STEP == 0: minimized[t] = data['snapshots'][t]
+	for d in [data, smart_data]:
+		minimized = {}
+		for t in d['snapshots']:
+			if t % STEP == 0: minimized[t] = d['snapshots'][t]
 
-	data['snapshots'] = minimized
+		d['snapshots'] = minimized
 
 	# dump to MINIMIZED file
 	with open(CONF.sim.out_min_file, 'w') as out_min:
 		json.dump(data, out_min)
+	with open(CONF.sim.smart_out_min_file, 'w') as out_min:
+		json.dump(smart_data, out_min)
+
+	# dump aggregate metrics
+	aggregate = {}
+	k = db.SimData.get_avg_consumption()
+	diff_k = k - db.SimData.get_avg_consumption(smart=True)
+	aggregate['perc_k'] = diff_k / float(k)
+	no_pms = db.SimData.get_avg_no_pms()
+	diff_no_pms = no_pms - db.SimData.get_avg_no_pms(smart=True)
+	aggregate['perc_no_pms'] = diff_no_pms / float(no_pms)
+	no_x = db.SimData.get_avg_nodestfound()
+	diff_x = no_x - db.SimData.get_avg_nodestfound(smart=True)
+	aggregate['perc_x'] = diff_x / float(no_x) 
+	with open(CONF.sim.aggregate_out_file, 'w') as out:
+		json.dump(aggregate, out)
 
 	print 'Simulation ended! Read logs for details'
