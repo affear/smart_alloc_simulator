@@ -4,7 +4,7 @@
 <link rel="import" href="../vendor/core-item/core-item.html">
 
 
-<polymer-element name="stat-card" attributes="label value">
+<polymer-element name="stat-card" attributes="label value" >
     <template>
         <style>
         :host {
@@ -37,7 +37,7 @@
             font-weight: 500;
         }
         </style>
-        <paper-shadow z="1" class="card">
+        <paper-shadow z="{{z}}" class="card" animated on-mouseover="{{onMouseOver}}" on-mouseout="{{onMouseOut}}">
             <core-item class="item" layout vertical>
                 <div class="header" one>
                     <p>{{label}}</p>
@@ -49,9 +49,16 @@
         </paper-shadow>
     </template>
     <script>
-    Polymer({
-        label: "label",
-        value: "value"
+    Polymer('stat-card', {
+        label: 'label',
+        value: 'value',
+        z: '1',
+        onMouseOver: function(e, detail, sender) {
+        	sender.setZ(2);
+        },
+        onMouseOut: function(e, detail, sender) {
+        	sender.setZ(1);
+        }
 
     });
     </script>
