@@ -12,5 +12,10 @@ class BaseEndpoint(object):
 
 			def on_warning(self, ctxt, publisher_id, payload, metadata):
 				pass
+
+		NB: ctxt is expected to be something like
+		`{
+			'smart': False
+		}`
 	'''
 	event_type = ''
