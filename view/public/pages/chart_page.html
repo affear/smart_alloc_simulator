@@ -1,8 +1,14 @@
 <link rel="import" href="elements/stat-card.html">
 
-<google-chart type="line">
-</google-chart>
+<div>
+    <p class="section-title">Last Simulation</p>
+    <hr width="80%" align="center" noshade>
+</div>
 
+<paper-shadow z="1" id="chart">
+    <google-chart type="line">
+    </google-chart>
+</paper-shadow>
 <template is="auto-binding" id="stats-list">
     <stat-card label="Steps Count" value="{{data.t_real}}"></stat-card>
     <stat-card label="Average Consumption" value="{{data.avg_k}}"></stat-card>
@@ -11,12 +17,32 @@
     <stat-card label="Boot Count" value="{{data.no_boot}}"></stat-card>
     <stat-card label="Resize Count" value="{{data.no_resize}}"></stat-card>
     <stat-card label="Delete Count" value="{{data.no_delete}}"></stat-card>
+
+    <div>
+        <p class="section-title">Smart Simulations Aggregates</p>
+        <hr width="80%" align="center" noshade>
+    </div>
+
+    <stat-card label="Average VMs" value="{{data.tot_avg_x_smart}}" class="smart"></stat-card>
+    <stat-card label="Miss Count" value="{{data.tot_avg_pms_smart}}" class="smart"></stat-card>
+    <stat-card label="Average Consumption" value="{{data.tot_avg_k_smart}}" class="smart"></stat-card>
+
+    <div>
+        <p class="section-title">Simulations Aggregates</p>
+        <hr width="80%" align="center" noshade>
+    </div>
+
+    <stat-card label="Average VMs" value="{{data.tot_avg_pms}}"></stat-card>
+    <stat-card label="Miss Count" value="{{data.tot_avg_x}}"></stat-card>
+    <stat-card label="Average Consumption" value="{{data.tot_avg_k}}"></stat-card>
+
+    <p></p>
 </template>
 
 <script>
 var chart = document.querySelector('google-chart');
 var statsList = document.querySelector('#stats-list');
-var truncateDecimal = function (num) {
+var truncateDecimal = function(num) {
     return Math.round(num * 100) / 100
 };
 var drawGraph = function() {
@@ -37,6 +63,10 @@ var drawGraph = function() {
             // console.log(data.snapshots);
             data.avg_k = truncateDecimal(data.avg_k);
             data.avg_pms = truncateDecimal(data.avg_pms);
+            data.tot_avg_pms = truncateDecimal(data.tot_avg_pms);
+            data.tot_avg_k = truncateDecimal(data.tot_avg_k);
+            data.tot_avg_x_smart = truncateDecimal(data.tot_avg_x_smart);
+            data.tot_avg_k_smart = truncateDecimal(data.tot_avg_k_smart);
             statsList.data = data;
             prev = [0, 0];
             $.each(data.snapshots,
