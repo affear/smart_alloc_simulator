@@ -24,6 +24,21 @@ sim_opts = [
 		default='sim.f.out.min.json',
 		help='The minified output file of of the simulation'
 	),
+	cfg.StrOpt(
+		name='smart_out_file',
+		default='smart_sim.f.out.json',
+		help='The output file of the smart simulation'
+	),
+	cfg.StrOpt(
+		name='smart_out_min_file',
+		default='smart_sim.f.out.min.json',
+		help='The minified output file of of the smart simulation'
+	),
+	cfg.StrOpt(
+		name='aggregate_out_file',
+		default='sim.f.aggregate.json',
+		help='The aggregate statistics. not_smart VS smart.'
+	),
 ]
 CONF = cfg.CONF
 CONF.register_group(sim_group)
