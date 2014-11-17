@@ -5,6 +5,7 @@ if __name__ == '__main__':
 	from sim.concrete.db import get_snapshot, VMNotFoundException
 	from sim.nova.scheduler.manager import NoDestinationFoundException
 	from sim.novaclient import commands
+	from sim import db
 	from sim import config
 	from oslo.config import cfg
 	from oslo.messaging import RemoteError
@@ -103,7 +104,28 @@ if __name__ == '__main__':
 	#		(which will be interpolated by Google Charts)
 	# - the average of statistics
 
-	# prepare output and dump to out files
+	# first of all, store sim data to db
+	session = db.get_session()
+	with session.begin():
+		simdata = db.SimData(
+			avg_consumption=data['avg_k'],
+			avg_no_pms=data['avg_pms'],
+			no_nodestfound=data['no_X'],
+			#smart = Column(Boolean, default=False)
+		)
+		session.add(simdata)
+
+	# add total metrics to data
+	# smart
+	data['tot_avg_k_smart'] = db.SimData.get_avg_consumption(smart=True)
+	data['tot_avg_pms_smart'] = db.SimData.get_avg_no_pms(smart=True)
+	data['tot_avg_x_smart'] = db.SimData.get_avg_nodestfound(smart=True)
+	# not smart
+	data['tot_avg_k'] = db.SimData.get_avg_consumption()
+	data['tot_avg_pms'] = db.SimData.get_avg_no_pms()
+	data['tot_avg_x'] = db.SimData.get_avg_nodestfound()
+
+	# dump to file (not minimized)
 	with open(CONF.sim.out_file, 'w') as out:
 		json.dump(data, out)
 	
@@ -115,7 +137,8 @@ if __name__ == '__main__':
 
 	data['snapshots'] = minimized
 
+	# dump to MINIMIZED file
 	with open(CONF.sim.out_min_file, 'w') as out_min:
-		json.dump(data, out_min)	
+		json.dump(data, out_min)
 
 	print 'Simulation ended! Read logs for details'
