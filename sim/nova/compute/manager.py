@@ -52,7 +52,7 @@ class ComputeManager(object):
 		dest = db.Host.get(dest_id)
 		# 2 ...
 		# 3
-		notifier.info({}, 'compute.instance.create.start', {'flavor': flavor})
+		notifier.info(ctx, 'compute.instance.create.start', {'flavor': flavor})
 		# 4 ...
 		# 5
 		vm = db.VM(id=id, flavor=flavor, host=dest)
@@ -60,7 +60,7 @@ class ComputeManager(object):
 		# 6
 		# SPAWNING... we cannot spawn real VMs
 		# 7
-		notifier.info({}, 'compute.instance.create.end', {'vm': vm})
+		notifier.info(ctx, 'compute.instance.create.end', {'vm': vm})
 
 		self._log(self.logger.info, 'boot', vm)
 
@@ -80,15 +80,15 @@ class ComputeManager(object):
 			self.logger.error(e.message)
 			raise e
 
-		notifier.info({}, 'compute.instance.delete.start', {'vm': vm})
+		notifier.info(ctx, 'compute.instance.delete.start', {'vm': vm})
 		# 3 & 4
 		vm.terminate()
 		# 5
-		notifier.info({}, 'compute.instance.delete.end', {'vm_id': id})
+		notifier.info(ctx, 'compute.instance.delete.end', {'vm_id': id})
 
 		self._log(self.logger.info, 'delete', id)
 
-	def _do_live_migrate(self, vm, flavor, host):
+	def _do_live_migrate(self, ctx, vm, flavor, host):
 		notifier = rpc.get_notifier(self.hostname)
 
 		notification_payload = {
@@ -97,11 +97,11 @@ class ComputeManager(object):
 			'host': host.id 
 		}
 
-		notifier.info({}, 'compute.instance.live_migrate.start', notification_payload)
+		notifier.info(ctx, 'compute.instance.live_migrate.start', notification_payload)
 		# move
 		vm.move(new_flavor=flavor, new_host=host)
 		# notify end
-		notifier.info({}, 'compute.instance.live_migrate.end', notification_payload)
+		notifier.info(ctx, 'compute.instance.live_migrate.end', notification_payload)
 
 	def resize(self, ctx, id, flavor):
 		# A bit less precise desciption than other methods...
@@ -138,7 +138,7 @@ class ComputeManager(object):
 			self.logger.error(e.message)
 			raise e
 
-		notifier.info({}, 'compute.instance.resize.start', {'vm': vm})
+		notifier.info(ctx, 'compute.instance.resize.start', {'vm': vm})
 		# stats down to perform a right calculus for the host
 		vm.host.stats_down(vm.flavor).save()
 		try:
@@ -154,9 +154,9 @@ class ComputeManager(object):
 
 		# live_migrate now
 		dest = db.Host.get(dest_id)
-		self._do_live_migrate(vm, flavor, dest)
+		self._do_live_migrate(ctx, vm, flavor, dest)
 		# notify end
-		notifier.info({}, 'compute.instance.resize.end', {'vm': vm})
+		notifier.info(ctx, 'compute.instance.resize.end', {'vm': vm})
 
 		self._log(self.logger.info, 'resize', id, flavor['name'])
 
@@ -171,7 +171,7 @@ class ComputeManager(object):
 				self.logger.error(e.message)
 				raise e
 
-			self._do_live_migrate(vm, flavor, db.Host.get(host_id))
+			self._do_live_migrate(ctx, vm, flavor, db.Host.get(host_id))
 
 			self._log(self.logger.info, 'live_migrate', vm_id, flavor['name'], host_id)
 			

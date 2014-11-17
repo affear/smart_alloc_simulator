@@ -15,7 +15,7 @@ class _Command(object):
 	def __init__(self):
 		self.compute_rpcapi = rpcapi.ComputeTaskAPI()
 
-	def execute(self):
+	def execute(self, smart=False):
 		raise NotImplementedError
 
 	class Meta:
@@ -30,8 +30,8 @@ class CreateCommand(_Command):
 		self.flavor = flavor
 		self.id = id
 
-	def execute(self):
-		self.compute_rpcapi.build_instance(flavor=self.flavor, id=self.id)
+	def execute(self, smart=False):
+		self.compute_rpcapi.build_instance(flavor=self.flavor, id=self.id, smart=smart)
 
 class TerminateCommand(_Command):
 	name = 'down'
@@ -40,8 +40,8 @@ class TerminateCommand(_Command):
 		super(TerminateCommand, self).__init__()
 		self.id = id
 
-	def execute(self):
-		self.compute_rpcapi.delete(id=self.id)
+	def execute(self, smart=False):
+		self.compute_rpcapi.delete(id=self.id, smart=smart)
 
 class ResizeCommand(_Command):
 	name = 'resize'
@@ -51,5 +51,5 @@ class ResizeCommand(_Command):
 		self.flavor = flavor
 		self.id = id
 
-	def execute(self):
-		self.compute_rpcapi.resize(id=self.id, flavor=self.flavor)
+	def execute(self, smart=False):
+		self.compute_rpcapi.resize(id=self.id, flavor=self.flavor, smart=smart)
