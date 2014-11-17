@@ -95,12 +95,13 @@ if __name__ == '__main__':
 
 	# start the simulation
 	logger.info('Simulation started')
+	init_db()
 	data = do_sim()
 	logger.info('Simulation ended')
-	# reset db
-	init_db()
+
 	# start the SMART simulation
 	logger.info('Smart simulation started')
+	init_db()
 	smart_data = do_sim(smart=True)
 	logger.info('Smart simulation ended')
 

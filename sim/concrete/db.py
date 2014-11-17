@@ -6,12 +6,43 @@ import logging, memcache, pickle
 
 CONF = cfg.CONF
 CONF.import_group('concrete', 'sim.concrete')
-
-_CACHE = memcache.Client([CONF.concrete.db_url], debug=0)
-
 # logging
 setup_logger('db', CONF.logs.db_log_file)
 logger = logging.getLogger('db')
+
+_CACHE = memcache.Client([CONF.concrete.db_url], debug=0)
+
+# a way to store all hosts keys to later get them
+ALL_HOSTS_KEY = 'all_hosts'
+HOSTS = None
+
+def init_db():
+	global HOSTS
+	_CACHE.flush_all()
+	HOSTS = Set()
+	_set(ALL_HOSTS_KEY, HOSTS)
+	i = 0
+	for pm in CONF.concrete.pms:
+		try:
+			h = Host(
+				id=i,
+				vcpus=pm[METRICS.VCPU],
+				memory_mb=pm[METRICS.RAM],
+				local_gb=pm[METRICS.DISK],
+				kxvcpu=pm[METRICS.KXVCPU]
+			)
+			h.save(created=True)
+			i += 1
+			logger.info(h.hostname + ' pm created')
+		except Exception as e:
+			logger.error(e)
+
+#TODO very unefficient
+def _add_host(key):
+	global HOSTS
+	HOSTS = _get(ALL_HOSTS_KEY)
+	HOSTS.add(key)
+	_set(ALL_HOSTS_KEY, HOSTS)
 
 class VMNotFoundException(Exception):
 	pass
@@ -228,42 +259,3 @@ def get_snapshot():
 		return accum
 	k = reduce(reduce_fn, active_hosts, 0)
 	return k, no_pms
-
-
-def init_db():
-	i = 0
-	for pm in CONF.concrete.pms:
-		try:
-			h = Host(
-				id=i,
-				vcpus=pm[METRICS.VCPU],
-				memory_mb=pm[METRICS.RAM],
-				local_gb=pm[METRICS.DISK],
-				kxvcpu=pm[METRICS.KXVCPU]
-			)
-			h.save(created=True)
-			i += 1
-			logger.info(h.hostname + ' pm created')
-		except Exception as e:
-			logger.error(e)
-
-#TODO very unefficient
-def _add_host(key):
-	_HOSTS = _get(ALL_HOSTS_KEY)
-	_HOSTS.add(key)
-	_set(ALL_HOSTS_KEY, _HOSTS)
-
-# a way to store all hosts keys to later get them
-ALL_HOSTS_KEY = 'all_hosts'
-try:
-	_HOSTS = _get(ALL_HOSTS_KEY)
-	if not _HOSTS: raise
-	for h in Host.get_all():
-		if h.vcpus_used > 0:
-			#this means that db is corrupted
-			raise
-except:	
-	_CACHE.flush_all()
-	_HOSTS = Set()
-	_set(ALL_HOSTS_KEY, _HOSTS)
-	init_db()
