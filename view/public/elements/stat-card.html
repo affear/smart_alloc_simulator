@@ -4,7 +4,7 @@
 <link rel="import" href="../vendor/core-item/core-item.html">
 
 
-<polymer-element name="stat-card" attributes="label value" >
+<polymer-element name="stat-card" attributes="label value">
     <template>
         <style>
         :host {
@@ -17,11 +17,17 @@
             font-weight: 300;
             font-size: 15px;
             min-width: 10em;
+            border-radius: 4px;
         }
         .item {
             height: 7em;
             min-width: 10em;
             overflow: hidden;
+            background-color: white;
+            border-radius: 4px;
+        }
+        :host-context(.smart) .header {
+            background-color: #4CAF50;
         }
         .header {
             padding-left: 0.5em;
@@ -51,13 +57,13 @@
     <script>
     Polymer('stat-card', {
         label: 'label',
-        value: 'value',
+        value: '',
         z: '1',
         onMouseOver: function(e, detail, sender) {
-        	sender.setZ(2);
+            sender.setZ(2);
         },
         onMouseOut: function(e, detail, sender) {
-        	sender.setZ(1);
+            sender.setZ(1);
         }
 
     });

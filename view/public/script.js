@@ -19,22 +19,22 @@
             title: "Compute Log",
             hash: "compute_log",
             icon: "toc",
-            url: 'pages/logs/compute.log',
+            url: 'pages/compute_page.html',
         }, {
             title: "Scheduler Log",
             hash: "scheduler_log",
             icon: "toc",
-            url: 'pages/logs/scheduler.log',
+            url: 'pages/scheduler_page.html',
         }, {
             title: "Consolidator Log",
             hash: "consolidator_log",
             icon: "toc",
-            url: 'pages/logs/consolidator.log',
+            url: 'pages/consolidator_page.html',
         }, {
             title: "Database Log",
             hash: "database_log",
             icon: "toc",
-            url: 'pages/logs/db.log',
+            url: 'pages/db_page.html',
         }];
         template.pageTitle = template.pages[0];
         template.addEventListener('template-bound', function(e) {

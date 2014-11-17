@@ -1,0 +1,37 @@
+<link rel="import" href="../vendor/polymer/polymer.html">
+
+<link rel="import" href="../vendor/paper-shadow/paper-shadow.html">
+
+<polymer-element name="log-container" attributes="logPath">
+    <template>
+        <style>
+        :host {
+            display: inline-block;
+            overflow: hidden;
+            width: 100%;
+        }
+        #log-content {
+            height: 100%;
+            margin-left: 1.5em;
+            margin-right: 1.5em;
+            background-color: white;
+        }
+        #log-content iframe {
+            height: 100%;
+            width: 100%;
+            border: none;
+        }
+        </style>
+        <paper-shadow z="1" id="log-content">
+            <iframe src="{{logPath}}"></iframe>
+        </paper-shadow>
+    </template>
+    <script>
+    Polymer({
+        logPath: '',
+        ready: function() {
+            //TODO
+        }
+    });
+    </script>
+</polymer-element>
