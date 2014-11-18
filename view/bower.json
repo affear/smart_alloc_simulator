@@ -25,7 +25,7 @@
     "core-elements": "Polymer/core-elements#~0.5.0",
     "paper-elements": "Polymer/paper-elements#~0.5.0",
     "webcomponentsjs": "Polymer/webcomponentsjs#~0.5.0",
-    "google-chart": "GoogleWebComponents/google-chart#~0.1.0"
+    "google-chart": "GoogleWebComponents/google-chart#~0.2.0"
   },
   "resolutions": {
     "polymer": "~0.5.0",
