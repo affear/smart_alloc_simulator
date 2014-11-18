@@ -1,5 +1,5 @@
 var truncateDecimal = function(num) {
-    return Math.round(num * 100) / 100
+    return Math.round(num * 100) / 100;
 };
 
 var parseSimStats = function(statsInfo) {
@@ -13,15 +13,10 @@ var parseSimStats = function(statsInfo) {
 
             data.avg_k = truncateDecimal(data.avg_k);
             data.avg_pms = truncateDecimal(data.avg_pms);
-            data.tot_avg_pms = truncateDecimal(data.tot_avg_pms);
-            data.tot_avg_k = truncateDecimal(data.tot_avg_k);
-            data.tot_avg_x_smart = truncateDecimal(data.tot_avg_x_smart);
-            data.tot_avg_k_smart = truncateDecimal(data.tot_avg_k_smart);
             statsInfo.stats.data = data;
             prev = [0, 0];
             $.each(data.snapshots,
                 function(key, value) {
-                    // console.log(key + ' ' + value);
                     var row;
                     if (value instanceof Array) {
                         row = ['t' + key, value[0], value[1], null];
@@ -83,14 +78,27 @@ var parseSimStats = function(statsInfo) {
 
 }
 
+var parseAggrStats = function (aggrStats) {
+    $.ajax({
+        url: 'aggregate.data.json',
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            aggrStats.data = {};
+            aggrStats.data.perc_no_pms = data.perc_no_pms * 100;
+            aggrStats.data.perc_k = data.perc_x * 100;
+            aggrStats.data.perc_x = data.perc_k * 100;
+        }
+    });
+};
+
 var smartChart = document.querySelector('#smart-chart');
 var smartStats = document.querySelector('#smart-stats');
 var smartStatsInfo = {
     chart: smartChart,
     stats: smartStats,
     fileName: 'smart_chart.data.json',
-}
-
+};
 parseSimStats(smartStatsInfo);
 
 
@@ -100,9 +108,11 @@ var normStatsInfo = {
     chart: normChart,
     stats: normStats,
     fileName: 'chart.data.json',
-}
-
+};
 parseSimStats(normStatsInfo);
+
+var aggrStats = document.querySelector('#aggr-stats');
+parseAggrStats(aggrStats);
 
 $(window).resize(function() {
     smartChart.drawChart();
