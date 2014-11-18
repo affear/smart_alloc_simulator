@@ -5,19 +5,22 @@
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
 <head>
+    <script type="text/javascript" src="../vendor/jquery/dist/jquery.min.js"></script>
     <script src="vendor/webcomponentsjs/webcomponents.js"></script>
     <script type="text/javascript" src="script.js"></script>
-    <script type="text/javascript" src="../vendor/jquery/dist/jquery.min.js"></script>
 
     <link rel="import" href="vendor/font-roboto/roboto.html">
+    <link rel="import" href="vendor/core-ajax/core-ajax.html">
     <link rel="import" href="vendor/core-scaffold/core-scaffold.html">
     <link rel="import" href="vendor/core-menu/core-menu.html" />
     <link rel="import" href="vendor/core-icon/core-icon.html" />
     <link rel="import" href="vendor/paper-item/paper-item.html">
     <link rel="import" href="vendor/core-animated-pages/core-animated-pages.html">
     <link rel="import" href="vendor/core-animated-pages/transitions/slide-from-right.html">
-    <link rel="import" href="vendor/core-ajax/core-ajax.html">
+    <link rel="import" href="vendor/google-chart/google-chart.html">
     <link rel="import" href="elements/log-container.html">
+
+
 
 
     <link rel="stylesheet" type="text/css" href="main.css" media="screen" />
@@ -26,7 +29,7 @@
 <body unresolved>
     <template is="auto-binding" id="t">
 
-        <core-ajax id="ajax" auto url="{{selectedPage.page.url}}" handleAs="text" on-core-response="{{onResponse}}">
+        <core-ajax id="ajax" url="{{selectedPage.page.url}}" handleAs="text" on-core-response="{{onResponse}}">
         </core-ajax>
 
         <flatiron-director route="{{route}}" autoHash></flatiron-director>
@@ -39,8 +42,8 @@
                 <core-menu id="menu-item" selected="{{route}}" valueattr="hash" on-core-select="{{menuItemSelected}}" selectedModel="{{selectedPage}}">
                     <template repeat="{{page in pages}}">
                         <paper-item hash="{{page.hash}}">
-                        <core-icon icon="{{page.icon}}"></core-icon>
-                        <core-label>{{page.title}}</core-label>
+                            <core-icon icon="{{page.icon}}"></core-icon>
+                            <core-label>{{page.title}}</core-label>
                             <a href="#{{page.hash}}"></a>
                         </paper-item>
                     </template>
