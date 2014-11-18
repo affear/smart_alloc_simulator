@@ -52,12 +52,12 @@ core-menu > paper-item.core-selected {
 core-icon {
     margin-right: 0.5em;
 }
-#chart {
+#chart-shadow {
     height: 80%;
     margin: 1.5em;
     background-color: white;
 }
-#chart google-chart{
+#chart-shadow google-chart{
     width: 100%;
     height: 100%;
 }
@@ -68,4 +68,13 @@ core-icon {
     color: gray;
     text-transform: uppercase;
     text-align: center;
+}
+
+.smart p{
+    color: #4CAF50;
+}
+
+.smart hr{
+    color: #4CAF50;
+    border-color: #4CAF50;
 }
