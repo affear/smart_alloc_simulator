@@ -1,17 +1,15 @@
 var truncateDecimal = function(num) {
     return Math.round(num * 100) / 100;
 };
-    console.log("chart_page")
 
 var parseSimStats = function(statsInfo) {
     rows = [];
-    console.log("parseSimStats()")
+
     $.ajax({
         url: statsInfo.fileName,
         dataType: 'json',
         async: false,
         success: function(data) {
-            console.log(data);
 
             data.avg_k = truncateDecimal(data.avg_k);
             data.avg_pms = truncateDecimal(data.avg_pms);
@@ -77,15 +75,14 @@ var parseSimStats = function(statsInfo) {
     chart.setAttribute("options", JSON.stringify(options));
     chart.setAttribute("cols", JSON.stringify(cols));
     chart.setAttribute("rows", JSON.stringify(rows));
-    chart.drawChart();
 }
 
-var parseAggrStats = function(aggrStats) {
+var parseAggrStats = function (aggrStats) {
     $.ajax({
         url: 'aggregate.data.json',
         dataType: 'json',
         async: false,
-        success: function(data) {
+        success: function (data) {
             aggrStats.data = {};
             aggrStats.data.perc_no_pms = data.perc_no_pms * 100;
             aggrStats.data.perc_k = data.perc_x * 100;
@@ -116,7 +113,9 @@ parseSimStats(normStatsInfo);
 var aggrStats = document.querySelector('#aggr-stats');
 parseAggrStats(aggrStats);
 
-
+smartChart.addEventListener("google-chart-render", function  () {
+    //smartChart.drawChart();
+})
 
 $(window).resize(function() {
     smartChart.drawChart();
