@@ -1,15 +1,43 @@
 <link rel="import" href="elements/stat-card.html">
+<script type="text/javascript" src="../scripts/chart_page.js"></script>
 
-<div>
-    <p class="section-title">Last Simulation</p>
+
+<!-- SMART SIMULATION SECTION -->
+<div class="smart">
+    <p class="section-title">Smart Simulation</p>
     <hr width="80%" align="center" noshade>
 </div>
 
-<paper-shadow z="1" id="chart">
-    <google-chart type="line">
+<paper-shadow z="1" id="chart-shadow">
+    <google-chart type="line" id="smart-chart">
     </google-chart>
 </paper-shadow>
-<template is="auto-binding" id="stats-list">
+
+
+<template is="auto-binding" id="smart-stats">
+    <stat-card label="Steps Count" value="{{data.t_real}}" class="smart"></stat-card>
+    <stat-card label="Average Consumption" value="{{data.avg_k}}" class="smart"></stat-card>
+    <stat-card label="Average VMs" value="{{data.avg_pms}}" class="smart"></stat-card>
+    <stat-card label="Miss Count" value="{{data.no_X}}" class="smart"></stat-card>
+    <stat-card label="Boot Count" value="{{data.no_boot}}" class="smart"></stat-card>
+    <stat-card label="Resize Count" value="{{data.no_resize}}" class="smart"></stat-card>
+    <stat-card label="Delete Count" value="{{data.no_delete}}" class="smart"></stat-card>
+</template>
+
+
+<!-- NORMAL SIMULATION SECTION -->
+
+<div>
+    <p class="section-title">Normal Simulation</p>
+    <hr width="80%" align="center" noshade>
+</div>
+
+<paper-shadow z="1" id="chart-shadow">
+    <google-chart type="line" id="norm-chart">
+    </google-chart>
+</paper-shadow>
+
+<template is="auto-binding" id="norm-stats">
     <stat-card label="Steps Count" value="{{data.t_real}}"></stat-card>
     <stat-card label="Average Consumption" value="{{data.avg_k}}"></stat-card>
     <stat-card label="Average VMs" value="{{data.avg_pms}}"></stat-card>
@@ -17,122 +45,23 @@
     <stat-card label="Boot Count" value="{{data.no_boot}}"></stat-card>
     <stat-card label="Resize Count" value="{{data.no_resize}}"></stat-card>
     <stat-card label="Delete Count" value="{{data.no_delete}}"></stat-card>
-
-    <div>
-        <p class="section-title">Smart Simulations Aggregates</p>
-        <hr width="80%" align="center" noshade>
-    </div>
-
-    <stat-card label="Average VMs" value="{{data.tot_avg_x_smart}}" class="smart"></stat-card>
-    <stat-card label="Miss Count" value="{{data.tot_avg_pms_smart}}" class="smart"></stat-card>
-    <stat-card label="Average Consumption" value="{{data.tot_avg_k_smart}}" class="smart"></stat-card>
-
-    <div>
-        <p class="section-title">Simulations Aggregates</p>
-        <hr width="80%" align="center" noshade>
-    </div>
-
-    <stat-card label="Average VMs" value="{{data.tot_avg_pms}}"></stat-card>
-    <stat-card label="Miss Count" value="{{data.tot_avg_x}}"></stat-card>
-    <stat-card label="Average Consumption" value="{{data.tot_avg_k}}"></stat-card>
-
-    <p></p>
 </template>
 
-<script>
-var chart = document.querySelector('google-chart');
-var statsList = document.querySelector('#stats-list');
-var truncateDecimal = function(num) {
-    return Math.round(num * 100) / 100
-};
-var drawGraph = function() {
-    rows = [];
 
-    $.ajax({
-        url: 'parse.me.json',
-        dataType: 'json',
-        async: false,
-        success: function(data) {
-            // console.log(data.t_real);
-            // console.log(data.avg_k);
-            // console.log(data.avg_pms);
-            // console.log(data.no_X);
-            // console.log(data.no_boot);
-            // console.log(data.no_resize);
-            // console.log(data.no_delete);
-            // console.log(data.snapshots);
-            data.avg_k = truncateDecimal(data.avg_k);
-            data.avg_pms = truncateDecimal(data.avg_pms);
-            data.tot_avg_pms = truncateDecimal(data.tot_avg_pms);
-            data.tot_avg_k = truncateDecimal(data.tot_avg_k);
-            data.tot_avg_x_smart = truncateDecimal(data.tot_avg_x_smart);
-            data.tot_avg_k_smart = truncateDecimal(data.tot_avg_k_smart);
-            statsList.data = data;
-            prev = [0, 0];
-            $.each(data.snapshots,
-                function(key, value) {
-                    // console.log(key + ' ' + value);
-                    var row;
-                    if (value instanceof Array) {
-                        row = ['t' + key, value[0], value[1], null];
-                        prev = value
-                    } else {
-                        row = ['t' + key, prev[0], prev[1], 'X'];
-                    }
-                    rows.push(row);
-                }
-            );
+<!-- AGGREGATE
+ STATISTICS SECTION -->
 
+<template is="auto-binding" id="aggr-stats">
 
-        }
-    });
+    <div>
+        <p class="section-title">Simulations Aggregate Statistics</p>
+        <hr width="80%" align="center" noshade>
+    </div>
 
-    var TOT_K_COL = '#D50000';
-    var NO_PMS_COL = '#CDDC39';
+    <stat-card label="VMs" value="{{data.tot_avg_x_smart}}" class="smart"></stat-card>
+    <stat-card label="Miss" value="{{data.tot_avg_pms_smart}}" class="smart"></stat-card>
+    <stat-card label="Consumption" value="{{data.tot_avg_k_smart}}" class="smart"></stat-card>
 
-    var options = {
-        curveType: 'function',
-        series: {
-            0: {
-                targetAxisIndex: 0
-            },
-            1: {
-                targetAxisIndex: 1
-            }
-        },
-        hAxis: {
-            showTextEvery: 10
-        },
-        vAxes: {
-            0: {
-                title: 'Total Consumption',
-            },
-            1: {
-                title: 'Number of PMs',
-            }
-        },
-        colors: [TOT_K_COL, NO_PMS_COL, 'black']
-    };
-    var cols = [{
-        label: "t",
-        type: "string"
-    }, {
-        label: "Total Consumption",
-        type: "number"
-    }, {
-        label: "Number of PMs",
-        type: "number"
-    }, {
-        role: "annotation",
-        type: "string"
-    }];
-    chart.setAttribute("options", JSON.stringify(options));
-    chart.setAttribute("cols", JSON.stringify(cols));
-    chart.setAttribute("rows", JSON.stringify(rows));
+    </br>
 
-}
-$(window).resize(function() {
-    chart.drawChart();
-});
-drawGraph();
-</script>
+</template>
