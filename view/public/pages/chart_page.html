@@ -2,54 +2,6 @@
 <link rel="import" href="elements/stat-card.html">
 <link rel="import" href="vendor/google-chart/google-chart.html">
 
-
-
-<!-- SMART SIMULATION SECTION -->
-<div class="smart">
-    <p class="section-title">Smart Simulation</p>
-    <hr width="80%" align="center" noshade>
-</div>
-
-<paper-shadow z="1" id="chart-shadow">
-    <google-chart type="line" id="smart-chart" on-google-chart-render="prova">
-    </google-chart>
-</paper-shadow>
-
-
-<template is="auto-binding" id="smart-stats">
-    <stat-card label="Steps Count" value="{{data.t_real}}" class="smart"></stat-card>
-    <stat-card label="Average Consumption" value="{{data.avg_k}}" class="smart"></stat-card>
-    <stat-card label="Average VMs" value="{{data.avg_pms}}" class="smart"></stat-card>
-    <stat-card label="Miss Count" value="{{data.no_X}}" class="smart"></stat-card>
-    <stat-card label="Boot Count" value="{{data.no_boot}}" class="smart"></stat-card>
-    <stat-card label="Resize Count" value="{{data.no_resize}}" class="smart"></stat-card>
-    <stat-card label="Delete Count" value="{{data.no_delete}}" class="smart"></stat-card>
-</template>
-
-
-<!-- NORMAL SIMULATION SECTION -->
-
-<div>
-    <p class="section-title">Normal Simulation</p>
-    <hr width="80%" align="center" noshade>
-</div>
-
-<paper-shadow z="1" id="chart-shadow">
-    <google-chart type="line" id="norm-chart">
-    </google-chart>
-</paper-shadow>
-
-<template is="auto-binding" id="norm-stats">
-    <stat-card label="Steps Count" value="{{data.t_real}}"></stat-card>
-    <stat-card label="Average Consumption" value="{{data.avg_k}}"></stat-card>
-    <stat-card label="Average VMs" value="{{data.avg_pms}}"></stat-card>
-    <stat-card label="Miss Count" value="{{data.no_X}}"></stat-card>
-    <stat-card label="Boot Count" value="{{data.no_boot}}"></stat-card>
-    <stat-card label="Resize Count" value="{{data.no_resize}}"></stat-card>
-    <stat-card label="Delete Count" value="{{data.no_delete}}"></stat-card>
-</template>
-
-
 <!-- AGGREGATE
  STATISTICS SECTION -->
 
@@ -60,10 +12,59 @@
         <hr width="80%" align="center" noshade>
     </div>
 
-    <stat-card label="VMs" value="{{data.perc_no_pms}} %" class="smart"></stat-card>
-    <stat-card label="Miss" value="{{data.perc_k}} %" class="smart"></stat-card>
-    <stat-card label="Consumption" value="{{data.perc_x}} %" class="smart"></stat-card>
-
+    <div layout horizontal center-justified>
+        <stat-card one label="VMs" value="{{data.perc_no_pms}} %" class="smart"></stat-card>
+        <stat-card one label="Miss" value="{{data.perc_k}} %" class="smart"></stat-card>
+        <stat-card one label="Consumption" value="{{data.perc_x}} %" class="smart"></stat-card>
+    </div>
     </br>
 
 </template>
+
+<div horizontal layout>
+
+    <div flex>
+        <!-- SMART SIMULATION SECTION -->
+        <div class="smart">
+            <p class="section-title">Smart Simulation</p>
+            <hr width="80%" align="center" noshade>
+        </div>
+
+        <paper-shadow z="1" id="chart-shadow">
+            <google-chart type="line" id="smart-chart" on-google-chart-render="prova">
+            </google-chart>
+        </paper-shadow>
+
+
+        <template is="auto-binding" id="smart-stats">
+            <div layout horizontal center-justified>
+
+                <stat-card one label="Average Consumption" value="{{data.avg_k}}" class="smart"></stat-card>
+                <stat-card one label="Average VMs" value="{{data.avg_pms}}" class="smart"></stat-card>
+                <stat-card one label="Miss Count" value="{{data.no_X}}" class="smart"></stat-card>
+            </div>
+        </template>
+    </div>
+
+    <!-- NORMAL SIMULATION SECTION -->
+
+    <div flex>
+        <div>
+            <p class="section-title">Normal Simulation</p>
+            <hr width="80%" align="center" noshade>
+        </div>
+
+        <paper-shadow z="1" id="chart-shadow">
+            <google-chart type="line" id="norm-chart">
+            </google-chart>
+        </paper-shadow>
+
+        <template is="auto-binding" id="norm-stats">
+            <div layout horizontal center-justified>
+                <stat-card one label="Average Consumption" value="{{data.avg_k}}"></stat-card>
+                <stat-card one label="Average VMs" value="{{data.avg_pms}}"></stat-card>
+                <stat-card one label="Miss Count" value="{{data.no_X}}"></stat-card>
+            </div>
+        </template>
+    </div>
+</div>
