@@ -16,27 +16,27 @@ sim_opts = [
 	),
 	cfg.StrOpt(
 		name='out_file',
-		default='sim.f.out.json',
+		default='results/sim.f.out.json',
 		help='The output file of the simulation'
 	),
 	cfg.StrOpt(
 		name='out_min_file',
-		default='sim.f.out.min.json',
+		default='results/sim.f.out.min.json',
 		help='The minified output file of of the simulation'
 	),
 	cfg.StrOpt(
 		name='smart_out_file',
-		default='smart_sim.f.out.json',
+		default='results/smart_sim.f.out.json',
 		help='The output file of the smart simulation'
 	),
 	cfg.StrOpt(
 		name='smart_out_min_file',
-		default='smart_sim.f.out.min.json',
+		default='results/smart_sim.f.out.min.json',
 		help='The minified output file of of the smart simulation'
 	),
 	cfg.StrOpt(
 		name='aggregate_out_file',
-		default='sim.f.aggregate.json',
+		default='results/sim.f.aggregate.json',
 		help='The aggregate statistics. not_smart VS smart.'
 	),
 ]
