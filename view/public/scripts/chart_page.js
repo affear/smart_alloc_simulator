@@ -79,7 +79,7 @@ var parseSimStats = function(statsInfo) {
 
 var parseAggrStats = function (aggrStats) {
     $.ajax({
-        url: 'aggregate.data.json',
+        url: 'data/aggregate.json',
         dataType: 'json',
         async: false,
         success: function (data) {
@@ -96,7 +96,7 @@ var smartStats = document.querySelector('#smart-stats');
 var smartStatsInfo = {
     chart: smartChart,
     stats: smartStats,
-    fileName: 'smart_chart.data.json',
+    fileName: 'data/smart_chart.json',
 };
 parseSimStats(smartStatsInfo);
 
@@ -106,7 +106,7 @@ var normStats = document.querySelector('#norm-stats');
 var normStatsInfo = {
     chart: normChart,
     stats: normStats,
-    fileName: 'chart.data.json',
+    fileName: 'data/chart.json',
 };
 parseSimStats(normStatsInfo);
 
