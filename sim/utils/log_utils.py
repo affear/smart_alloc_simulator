@@ -41,6 +41,6 @@ def setup_logger(name, file_name, formatting='%(asctime)s - %(name)s - %(levelna
 	streamHandler = logging.StreamHandler()
 	streamHandler.setFormatter(formatter)
 
-	logger.setLevel(logging.INFO)
+	logger.setLevel(logging.DEBUG)
 	logger.addHandler(fileHandler)
 	logger.addHandler(streamHandler)
