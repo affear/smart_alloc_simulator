@@ -22,7 +22,7 @@ class EntryEndpoint(object):
 		super(EntryEndpoint, self).__init__()
 
 		def _notify(ctxt, publisher_id, event_type, payload, metadata):
-			_cons.consolidate()
+			_cons.consolidate(ctxt, event_type, payload)
 
 		#set method for each priority
 		for p in self.allowed_priorities:
@@ -31,7 +31,7 @@ class EntryEndpoint(object):
 if __name__ == '__main__':
 	from sim import config
 	config.init_conf()
-
+	
 	transport = messaging.get_transport(cfg.CONF)
 	targets = [messaging.Target(topic='notifications'),]
 	endpoints = [EntryEndpoint()]
@@ -42,3 +42,4 @@ if __name__ == '__main__':
 	# even in openstack they do this:
 	# https://github.com/openstack/ceilometer/blob/master/ceilometer/notification.py#L104
 	server.start()
+	server.wait()
